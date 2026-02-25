@@ -26,7 +26,7 @@ public class PrayerRequest {
     private String submitterEmail;
 
     // If true, name is hidden from public view
-    private Boolean isAnonymous = false;
+    private Boolean isAnonymous = true;
 
     // How many people clicked "I prayed for this"
     private Integer prayerCount = 0;
