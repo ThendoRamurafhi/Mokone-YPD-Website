@@ -41,4 +41,12 @@ public class GlobalExceptionHandler {
         error.put("details", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    // Handle event full scenario
+    @ExceptionHandler(EventFullException.class)
+    public ResponseEntity<Map<String, String>> handleEventFull(EventFullException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
 }
