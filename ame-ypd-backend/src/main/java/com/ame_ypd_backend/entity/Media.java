@@ -38,6 +38,10 @@ public class Media {
     private String title;
     private String description;
     private String uploadedBy;
+    // For YouTube videos — store link instead of file
+    private String youtubeVideoId;    // e.g. "dQw4w9WgXcQ"
+    private String youtubeThumbnail;  // YouTube auto-generates this
+    private Boolean isYoutubeVideo = false;
 
     private LocalDateTime uploadedAt;
 
