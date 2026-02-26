@@ -69,6 +69,32 @@ public class MediaService {
         return new MediaResponseDTO(mediaRepository.save(media));
     }
 
+    // Save a YouTube video reference — no file upload needed
+    public MediaResponseDTO saveYoutubeVideo(
+            String youtubeVideoId,
+            String title,
+            String description,
+            String uploadedBy,
+            Media.MediaCategory category) {
+
+        Media media = new Media();
+        media.setYoutubeVideoId(youtubeVideoId);
+        // YouTube thumbnail URL is always this format
+        media.setYoutubeThumbnail(
+            "https://img.youtube.com/vi/" + youtubeVideoId + "/hqdefault.jpg");
+        media.setIsYoutubeVideo(true);
+        media.setFileUrl(
+            "https://www.youtube.com/watch?v=" + youtubeVideoId);
+        media.setMediaType(Media.MediaType.VIDEO);
+        media.setTitle(title);
+        media.setDescription(description);
+        media.setUploadedBy(uploadedBy);
+        media.setCategory(category != null ? category : Media.MediaCategory.GENERAL);
+        media.setFileName(title); // Use title as filename for YouTube videos
+
+        return new MediaResponseDTO(mediaRepository.save(media));
+    }
+
     // Get all media
     public List<MediaResponseDTO> getAllMedia() {
         return mediaRepository.findAll()
