@@ -48,6 +48,21 @@ public class MediaController {
         }
     }
 
+    // POST /api/v1/media/youtube — save YouTube video reference
+    @PostMapping("/youtube")
+    public ResponseEntity<MediaResponseDTO> saveYoutubeVideo(
+            @RequestParam("videoId") String youtubeVideoId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "uploadedBy", required = false) String uploadedBy,
+            @RequestParam(value = "category", required = false)
+                Media.MediaCategory category) {
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(mediaService.saveYoutubeVideo(
+                youtubeVideoId, title, description, uploadedBy, category));
+    }
+
     // GET /api/v1/media — all media
     @GetMapping
     public ResponseEntity<List<MediaResponseDTO>> getAllMedia() {
