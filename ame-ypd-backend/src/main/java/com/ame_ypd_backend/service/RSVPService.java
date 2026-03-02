@@ -29,6 +29,9 @@ public class RSVPService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     // Guest RSVP — no account needed
     public RSVPResponseDTO submitGuestRSVP(Long eventId, RSVPRequestDTO dto) {
 
@@ -54,6 +57,15 @@ public class RSVPService {
         event.setCurrentAttendees(
             event.getCurrentAttendees() + dto.getAttendanceCount());
         eventRepository.save(event);
+
+        // Send confirmation email if guest provided email
+        if (dto.getGuestEmail() != null) {
+            emailService.sendRSVPConfirmation(
+                dto.getGuestEmail(),
+                dto.getGuestName() != null ? dto.getGuestName() : "Guest",
+                event
+            );
+        }
 
         return new RSVPResponseDTO(rsvpRepository.save(rsvp));
     }
@@ -83,6 +95,13 @@ public class RSVPService {
         event.setCurrentAttendees(
             event.getCurrentAttendees() + dto.getAttendanceCount());
         eventRepository.save(event);
+
+        // Send confirmation email to member
+        emailService.sendRSVPConfirmation(
+            user.getEmail(),
+            user.getFirstName() != null ? user.getFirstName() : user.getUsername(),
+            event
+        );
 
         return new RSVPResponseDTO(rsvpRepository.save(rsvp));
     }

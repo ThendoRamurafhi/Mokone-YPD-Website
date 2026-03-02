@@ -18,6 +18,9 @@ public class PrayerRequestService {
 
     @Autowired
     private PrayerRequestRepository prayerRequestRepository;
+    
+    @Autowired
+    private EmailService emailService;
 
     // PUBLIC: Submit a new prayer request
     public PrayerRequestResponseDTO submitRequest(PrayerRequestSubmitDTO dto) {
@@ -31,6 +34,15 @@ public class PrayerRequestService {
         request.setStatus(PrayerRequest.RequestStatus.PENDING); // Always starts as pending
 
         PrayerRequest saved = prayerRequestRepository.save(request);
+
+        // Send confirmation if email was provided
+        if (dto.getSubmitterEmail() != null) {
+            emailService.sendPrayerRequestConfirmation(
+                dto.getSubmitterEmail(),
+                dto.getSubmitterName() != null ? dto.getSubmitterName() : "Friend"
+            );
+        }
+
         return new PrayerRequestResponseDTO(saved, false);
     }
 

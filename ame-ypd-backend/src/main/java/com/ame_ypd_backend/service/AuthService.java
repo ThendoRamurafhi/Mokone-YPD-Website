@@ -32,6 +32,9 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private EmailService emailService;
+
     public AuthResponseDTO register(RegisterRequestDTO dto) {
 
         // Check duplicates
@@ -54,6 +57,11 @@ public class AuthService {
 
         User saved = userRepository.save(user);
         String token = tokenProvider.generateToken(saved.getEmail());
+
+        // Send welcome email
+        if (saved.getFirstName() != null) {
+            emailService.sendWelcomeEmail(saved.getEmail(), saved.getFirstName());
+        }
 
         return new AuthResponseDTO(token, saved);
     }
