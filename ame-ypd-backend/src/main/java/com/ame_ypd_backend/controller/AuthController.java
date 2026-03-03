@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/auth")
@@ -17,6 +18,10 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+    
+    
+    @Value("${app.admin-secret}")
+    private String adminSecret;
 
     // POST /api/v1/auth/register
     @PostMapping("/register")
@@ -42,7 +47,7 @@ public class AuthController {
             @RequestHeader("X-Admin-Secret") String adminSecret) {
 
         // Simple secret key check — store this in application.properties
-        if (!"YPD-ADMIN-SECRET-2026".equals(adminSecret)) {
+        if (!this.adminSecret.equals(adminSecret)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity
