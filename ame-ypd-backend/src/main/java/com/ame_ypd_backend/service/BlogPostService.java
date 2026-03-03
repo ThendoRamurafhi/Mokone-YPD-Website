@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 
 @Service
 @Transactional
@@ -31,6 +33,8 @@ public class BlogPostService {
         post.setTags(dto.getTags());
         post.setCategory(dto.getCategory());
         post.setStatus(dto.getStatus());
+        // Strip dangerous scripts but keep safe HTML formatting
+        post.setContent(Jsoup.clean(dto.getContent(), Safelist.relaxed()));
 
         // If publishing immediately, set publishedAt
         if (dto.getStatus() == BlogPost.PostStatus.PUBLISHED) {
@@ -83,6 +87,8 @@ public class BlogPostService {
         post.setFeaturedImageUrl(dto.getFeaturedImageUrl());
         post.setTags(dto.getTags());
         post.setCategory(dto.getCategory());
+        // Strip dangerous scripts but keep safe HTML formatting
+        post.setContent(Jsoup.clean(dto.getContent(), Safelist.relaxed()));
 
         // If being published for the first time, set publishedAt
         if (dto.getStatus() == BlogPost.PostStatus.PUBLISHED
