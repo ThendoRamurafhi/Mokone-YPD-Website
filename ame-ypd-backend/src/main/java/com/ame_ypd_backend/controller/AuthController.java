@@ -33,4 +33,20 @@ public class AuthController {
             @Valid @RequestBody LoginRequestDTO dto) {
         return ResponseEntity.ok(authService.login(dto));
     }
+
+    // POST /api/v1/auth/create-admin
+    // Protected by a secret key — only someone with the key can create admins
+    @PostMapping("/create-admin")
+    public ResponseEntity<AuthResponseDTO> createAdmin(
+            @Valid @RequestBody RegisterRequestDTO dto,
+            @RequestHeader("X-Admin-Secret") String adminSecret) {
+
+        // Simple secret key check — store this in application.properties
+        if (!"YPD-ADMIN-SECRET-2026".equals(adminSecret)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(authService.createAdmin(dto));
+    }
 }

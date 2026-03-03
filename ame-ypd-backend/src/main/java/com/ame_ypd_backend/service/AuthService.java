@@ -84,4 +84,21 @@ public class AuthService {
         String token = tokenProvider.generateToken(dto.getEmail());
         return new AuthResponseDTO(token, user);
     }
+
+    public AuthResponseDTO createAdmin(RegisterRequestDTO dto) {
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setRole(User.Role.ADMIN); // ← This is the only difference from register()
+
+        User saved = userRepository.save(user);
+        String token = tokenProvider.generateToken(saved.getEmail());
+        return new AuthResponseDTO(token, saved);
+    }
 }
