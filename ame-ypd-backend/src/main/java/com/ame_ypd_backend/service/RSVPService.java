@@ -142,7 +142,7 @@ public class RSVPService {
 
     // Reusable capacity check — DRY principle
     private Event getEventAndCheckCapacity(Long eventId, int requestedSpots) {
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByIdWithLock(eventId)
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Event not found with id: " + eventId));
 
@@ -150,7 +150,7 @@ public class RSVPService {
             int available = event.getMaxAttendees() - event.getCurrentAttendees();
             if (requestedSpots > available) {
                 throw new EventFullException(
-                    "Not enough spots available. Only " + available + " spots left.");
+                    "Not enough spots. Only " + available + " spots left.");
             }
         }
         return event;
