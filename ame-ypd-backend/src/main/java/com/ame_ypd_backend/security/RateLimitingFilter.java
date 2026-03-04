@@ -6,17 +6,22 @@ import jakarta.servlet.http.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 @Component
 public class RateLimitingFilter extends OncePerRequestFilter {
 
     // Each IP address gets its own bucket
-    // ConcurrentHashMap is thread-safe — handles multiple requests at once
-    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+    // Replace the ConcurrentHashMap with this:
+    private final Cache<String, Bucket> buckets = Caffeine.newBuilder()
+        .expireAfterAccess(1, TimeUnit.HOURS) // Remove IPs inactive for 1 hour
+        .maximumSize(100_000)                  // Cap at 100k IPs max
+        .build();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -25,7 +30,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String ipAddress = getClientIP(request);
-        Bucket bucket = buckets.computeIfAbsent(ipAddress, this::createBucket);
+        Bucket bucket = buckets.get(ipAddress, this::createBucket);
 
         // Try to consume 1 token from the bucket
         if (bucket.tryConsume(1)) {
