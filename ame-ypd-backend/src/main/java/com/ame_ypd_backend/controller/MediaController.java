@@ -93,9 +93,21 @@ public class MediaController {
     @GetMapping("/files/{fileName}")
     public ResponseEntity<Resource> serveFile(@PathVariable String fileName) {
         try {
-            Path filePath = Paths.get(uploadDir).resolve(fileName).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
+            // Reject any fileName containing path tricks immediately
+            if (fileName.contains("..") || fileName.contains("/") 
+                    || fileName.contains("\\")) {
+                return ResponseEntity.badRequest().build();
+            }
 
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path filePath = uploadPath.resolve(fileName).normalize();
+
+            // Double-check resolved path is still inside uploadDir
+            if (!filePath.startsWith(uploadPath)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() && resource.isReadable()) {
                 return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,
