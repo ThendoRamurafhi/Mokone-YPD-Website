@@ -1,6 +1,8 @@
 package com.ame_ypd_backend.config;
 
 import com.ame_ypd_backend.security.JwtAuthenticationFilter;
+import com.ame_ypd_backend.security.RateLimitingFilter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    private RateLimitingFilter rateLimitingFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -68,7 +73,9 @@ public class SecurityConfig {
                 // Everything else requires at least being logged in
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtAuthenticationFilter,
+        
+            .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class)
+            .addFilterBefore(jwtAuthenticationFilter, 
                 UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
