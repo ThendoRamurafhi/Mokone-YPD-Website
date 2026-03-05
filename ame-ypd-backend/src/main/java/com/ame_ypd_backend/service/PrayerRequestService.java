@@ -68,12 +68,13 @@ public class PrayerRequestService {
 
     // PUBLIC: Increment prayer count — someone clicked "I prayed for this"
     public PrayerRequestResponseDTO incrementPrayerCount(Long requestId) {
-        PrayerRequest request = prayerRequestRepository.findById(requestId)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Prayer request not found with id: " + requestId));
-
-        request.setPrayerCount(request.getPrayerCount() + 1);
-        return new PrayerRequestResponseDTO(prayerRequestRepository.save(request), false);
+        if (!prayerRequestRepository.existsById(requestId)) {
+            throw new ResourceNotFoundException(
+                "Prayer request not found with id: " + requestId);
+        }
+        prayerRequestRepository.incrementPrayerCount(requestId);
+        PrayerRequest request = prayerRequestRepository.findById(requestId).get();
+        return new PrayerRequestResponseDTO(request, false);
     }
 
     // ADMIN: Get all pending requests
