@@ -5,6 +5,9 @@ import com.ame_ypd_backend.dto.LoginRequestDTO;
 import com.ame_ypd_backend.dto.RegisterRequestDTO;
 import com.ame_ypd_backend.service.AuthService;
 import jakarta.validation.Valid;
+
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,17 +44,39 @@ public class AuthController {
 
     // POST /api/v1/auth/create-admin
     // Protected by a secret key — only someone with the key can create admins
-    @PostMapping("/create-admin")
-    public ResponseEntity<AuthResponseDTO> createAdmin(
-            @Valid @RequestBody RegisterRequestDTO dto,
-            @RequestHeader("X-Admin-Secret") String adminSecret) {
+    @Value("${app.admin.registration.enabled}")
+    private boolean adminRegistrationEnabled;
 
-        // Simple secret key check — store this in application.properties
-        if (!this.adminSecret.equals(adminSecret)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    // POST /api/v1/auth/create-admin
+    @PostMapping("/create-admin")
+    public ResponseEntity<?> createAdmin(
+            @Valid @RequestBody RegisterRequestDTO dto,
+            @RequestHeader("X-Admin-Secret") String providedSecret) {
+
+        // Step 1: Check if admin creation is still enabled
+        if (!adminRegistrationEnabled) {
+            return ResponseEntity
+                .status(HttpStatus.GONE)  // 410 Gone — endpoint permanently disabled
+                .body(Map.of("error", 
+                    "Admin registration is disabled. Contact system administrator."));
         }
+
+        // Step 2: Validate secret
+        if (!adminSecret.equals(providedSecret)) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Invalid admin secret"));
+        }
+
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(authService.createAdmin(dto));
+    }
+
+    // POST /api/v1/auth/promote/{userId}
+    // Existing admin promotes another user — requires ADMIN role
+    @PutMapping("/promote/{userId}")
+    public ResponseEntity<?> promoteToAdmin(@PathVariable Long userId) {
+        return ResponseEntity.ok(authService.promoteToAdmin(userId));
     }
 }

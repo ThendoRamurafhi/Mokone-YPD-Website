@@ -70,6 +70,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/approve").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/reject").hasRole("ADMIN")
 
+                .requestMatchers(HttpMethod.POST, "/auth/create-admin").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/auth/promote/**").hasRole("ADMIN")
                 // Everything else requires at least being logged in
                 .anyRequest().authenticated()
             )

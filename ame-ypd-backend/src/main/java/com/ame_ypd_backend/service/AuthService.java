@@ -4,6 +4,7 @@ import com.ame_ypd_backend.dto.AuthResponseDTO;
 import com.ame_ypd_backend.dto.LoginRequestDTO;
 import com.ame_ypd_backend.dto.RegisterRequestDTO;
 import com.ame_ypd_backend.entity.User;
+import com.ame_ypd_backend.exception.ResourceNotFoundException;
 import com.ame_ypd_backend.repository.UserRepository;
 import com.ame_ypd_backend.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,17 @@ public class AuthService {
         user.setLastName(dto.getLastName());
         user.setRole(User.Role.ADMIN); // ← This is the only difference from register()
 
+        User saved = userRepository.save(user);
+        String token = tokenProvider.generateToken(saved.getEmail());
+        return new AuthResponseDTO(token, saved);
+    }
+
+    public AuthResponseDTO promoteToAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "User not found with id: " + userId));
+
+        user.setRole(User.Role.ADMIN);
         User saved = userRepository.save(user);
         String token = tokenProvider.generateToken(saved.getEmail());
         return new AuthResponseDTO(token, saved);
