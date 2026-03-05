@@ -4,7 +4,9 @@ import com.ame_ypd_backend.dto.AuthResponseDTO;
 import com.ame_ypd_backend.dto.LoginRequestDTO;
 import com.ame_ypd_backend.dto.RegisterRequestDTO;
 import com.ame_ypd_backend.entity.User;
+import com.ame_ypd_backend.exception.EmailAlreadyRegisteredException;
 import com.ame_ypd_backend.exception.ResourceNotFoundException;
+import com.ame_ypd_backend.exception.UsernameAlreadyTakenException;
 import com.ame_ypd_backend.repository.UserRepository;
 import com.ame_ypd_backend.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +42,10 @@ public class AuthService {
 
         // Check duplicates
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new EmailAlreadyRegisteredException("Email already registered");
         }
         if (userRepository.existsByUsername(dto.getUsername())) {
-            throw new RuntimeException("Username already taken");
+            throw new UsernameAlreadyTakenException("Username already taken");
         }
 
         // Create user — hash the password before saving
