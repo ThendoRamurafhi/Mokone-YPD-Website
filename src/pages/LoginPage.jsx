@@ -136,7 +136,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Guest Option */}
+        {/* Guest Option  */}
         <div className="text-center mt-6">
           <Link
             to="/"
