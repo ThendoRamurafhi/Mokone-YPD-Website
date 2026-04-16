@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { href, Link } from 'react-router-dom';
 import { NavIcons } from "../components/common/NavIcons";
+import YPDLogo from '../components/common/YPDLogo';
+
 
 const HomePage = () => {
 
@@ -33,27 +35,9 @@ const HomePage = () => {
   ];
 
   const latestPosts = [
-    {
-      postId: 1,
-      title: 'Walking in Faith During Difficult Times',
-      excerpt: 'Discover how to maintain your faith when life gets challenging...',
-      category: 'SERMON',
-      publishedAt: '2026-03-15',
-    },
-    {
-      postId: 2,
-      title: 'Youth Leadership Program Launch',
-      excerpt: 'We are excited to announce our new youth leadership program...',
-      category: 'ANNOUNCEMENT',
-      publishedAt: '2026-03-10',
-    },
-    {
-      postId: 3,
-      title: 'Community Service Report 2026',
-      excerpt: 'Read about all the amazing work our members did this year...',
-      category: 'NEWS',
-      publishedAt: '2026-03-05',
-    },
+    { id:1, category:"SERMON",       title:"Walking in Faith During Difficult Times",    excerpt:"Discover how to maintain your faith when life gets challenging — and how our community supports you.", author:"Rev. John Doe",        date:"Mar 15, 2026", read:"5 min" },
+    { id:2, category:"ANNOUNCEMENT", title:"Youth Leadership Program Now Open",           excerpt:"Equipping the next generation of church leaders. Applications are now open for our 2026 cohort.",        author:"Pastor Jane Smith",    date:"Mar 10, 2026", read:"3 min" },
+    { id:3, category:"NEWS",    title:"My Testimony of God's Grace",                excerpt:"A personal story of transformation through the AME Church YPD community and the power of prayer.",         author:"Sister Sarah Johnson", date:"Feb 28, 2026", read:"7 min" },
   ];
 
   /* ─── WELCOME / QUICK-ACCESS (Wix-inspired) ─── */
@@ -90,15 +74,31 @@ const HomePage = () => {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
+  const TESTIMONIALS = [
+    { name:"Ledile Kgopong",  role:"Church Member",    avatar:"LK", quote:"A welcoming community that truly feels like family. I've never felt so at home in a church before." },
+    { name:"Neo Mannya",     role:"YPD Conference President",     avatar:"NM", quote:"Exceptional sermons that challenge my faith in the most beautiful way. Deeply transformative." },
+    { name:"Thendo Ramurafhi",    role:"New Member",       avatar:"TR", quote:"I've found my spiritual home here. The YPD has helped me grow in ways I never imagined possible." },
+    { name:"Rev. MA Monyemorathwe", role:"Sibasa Circuit Local Pastor", avatar:"MAM", quote:"An inspiring experience every single time I attend. The spirit of this community is extraordinary." },
+  ];
+
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setActiveTestimonial(a => (a + 1) % TESTIMONIALS.length), 5000);
+    return () => clearInterval(id);
+  }, []);
+
   const categoryColors = {
     CONFERENCE: { bg: '#e8f0fe', text: '#1a56a0' },
     YOUTH:      { bg: '#f0e8fe', text: '#6b21a8' },
     COMMUNITY:  { bg: '#e6f4ea', text: '#1a6640' },
     WORSHIP:    { bg: '#fef3e2', text: '#92400e' },
     EDUCATIONAL:{ bg: '#fce8e8', text: '#991b1b' },
-    ANNOUNCEMENT:{ bg: '#e8f0fe', text: '#1a56a0' },
-    SERMON:     { bg: '#f0e8fe', text: '#6b21a8' },
-    NEWS:       { bg: '#fef3e2', text: '#92400e' },
+    TESTIMONY:    { bg:"rgba(180,60,60,0.08)", color:"#8a2020" },
+    ANNOUNCEMENT: { bg:"rgba(201,168,76,0.12)",color:"#8a6800" },
+    SERMON:       { bg:"rgba(37,96,64,0.1)",  color:"var(--green-mid)" },
+    NEWS:         { bg:"rgba(30,80,140,0.08)", color:"#1e508c" },
+    RESOURCE:     { bg:"rgba(60,60,180,0.08)", color:"#3c3cb4" },
   };
 
   /* recent updates for the right column (matches screenshot 2) */
@@ -138,12 +138,12 @@ const HomePage = () => {
           {/* YPD Circle Logo */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', inset: -10, borderRadius: '50%', border: '1px solid rgba(201,168,76,0.3)', animation: 'pulse 3s ease-in-out infinite' }} />
-              <svg width="88" height="88" viewBox="0 0 88 88" fill="none">
-                <circle cx="44" cy="44" r="42" fill="#0d2b1a" stroke="#c9a84c" strokeWidth="2.2"/>
-                <circle cx="44" cy="44" r="34" fill="none" stroke="#c9a84c" strokeWidth="0.8" strokeDasharray="3 3"/>
-                <text x="44" y="51" textAnchor="middle" fill="#c9a84c" fontSize="18" fontWeight="700" fontFamily="Georgia,serif" letterSpacing="2">YPD</text>
-              </svg>
+              <div style={{ 
+                position: 'absolute', inset: -10, borderRadius: '50%', 
+                border: '1px solid rgba(201,168,76,0.3)', 
+                animation: 'pulse 3s ease-in-out infinite' 
+              }} />
+              <YPDLogo width={99} height={99} />
             </div>
           </div>
 
@@ -263,7 +263,7 @@ const HomePage = () => {
       {/* ═══════════════════════════════════════════
           STATS BAR
       ═══════════════════════════════════════════ */}
-      <section style={{ background: '#c9a84c', padding: '0' }}>
+      {/* <section style={{ background: '#c9a84c', padding: '0' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
           {[['500+','Members'],['50+','Churches'],['100+','Events'],['20+','Years']].map(([val, lbl], i) => (
             <div key={i} style={{
@@ -275,7 +275,7 @@ const HomePage = () => {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* ═══════════════════════════════════════════
          WELCOME SECTION  
@@ -543,6 +543,9 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* ═══════════════════════════════════════════
+         SERMON SECTION  
+      ═══════════════════════════════════════════ */}
       <section id="media" style={{ background: "var(--green-deep)", padding: "100px 24px", position: "relative", overflow: "hidden" }}>
         {/* BG texture lines */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(201,168,76,0.03) 80px, rgba(201,168,76,0.03) 81px)", pointerEvents: "none" }} />
@@ -563,9 +566,44 @@ const HomePage = () => {
               <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.8, marginBottom: 36 }}>
                 Tune in to our latest sermon where we dive deep into faith and inspiration. Experience spiritual renewal and discover the Kingdom within you this week.
               </p>
-
-              
+              <button onClick={() => setPlaying(true)} className="btn-gold" style={{ display: "flex", alignItems: "center", gap: 10, border: "none", cursor: "pointer", fontSize: 13 }}>
+                <NavIcons.Play /> WATCH NOW
+              </button>
             </div>
+
+            {/* Video thumbnail */}
+          <div style={{ position: "relative" }}>
+            <div onClick={() => setPlaying(!playing)} style={{
+              background: "linear-gradient(135deg, var(--green-dark), #0d2218)",
+              borderRadius: 12, aspectRatio: "16/9", display: "flex", alignItems: "center", justifyContent: "center",
+              border: "1px solid rgba(201,168,76,0.2)", cursor: "pointer", position: "relative", overflow: "hidden",
+            }}>
+              {/* Decorative cross */}
+              <div style={{ position: "absolute", width: 2, height: "60%", background: "rgba(201,168,76,0.15)", top: "20%", left: "50%" }} />
+              <div style={{ position: "absolute", height: 2, width: "40%", background: "rgba(201,168,76,0.15)", top: "35%", left: "30%" }} />
+
+              {!playing ? (
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(201,168,76,0.2)", border: "2px solid var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                    <NavIcons.Play />
+                  </div>
+                  <p style={{ fontFamily: "'Cormorant Garamond',serif", color: "rgba(255,255,255,0.6)", fontSize: 15 }}>Click to Watch Sermon</p>
+                </div>
+              ) : (
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", borderRadius: 12 }} allowFullScreen title="Sermon" />
+              )}
+            </div>
+
+            {/* Features below video - Wix-style */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+              {[["View","Access our sermon library"],["Share","Spread the Word with others"],["Discuss","Join group conversations"],["Join","Become a member today"]].map(([t, d]) => (
+                <div key={t} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.1)", borderRadius: 8, padding: "14px 16px" }}>
+                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: "var(--gold)", marginBottom: 4 }}>{t}</div>
+                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>{d}</div>
+                </div>
+              ))}
+            </div>
+          </div>
           </div>
         
         </div>
@@ -574,72 +612,55 @@ const HomePage = () => {
       {/* ═══════════════════════════════════════════
           LATEST BLOG POSTS (unchanged structure)
       ═══════════════════════════════════════════ */}
-      <section style={{ padding: '80px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', color: '#c9a84c', display: 'block', marginBottom: 10 }}>
-              FROM THE COMMUNITY
+      <section id="blog" style={{ background: "var(--cream)", padding: "100px 24px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 56, flexWrap: "wrap", gap: 15 }}>
+            
+            <div>
+            <span className="section-eyebrow"> FROM THE COMMUNITY
             </span>
-            <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.9rem,3.5vw,2.8rem)', fontWeight: 700, color: '#0d2b1a', marginBottom: 12 }}>
-              Latest from Our Blog
-            </h2>
+            <h2 className="section-title"> Latest from Our Blog<br /><span style={{ color:"var(--green-mid)", fontStyle:"italic" }}>& Updates</span></h2>
+          </div> 
             <p style={{ fontSize: 15, color: '#6b8070', maxWidth: 480, margin: '0 auto', lineHeight: 1.8 }}>
               Sermons, announcements, testimonies and more from our community.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 28 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 28 }}>
             {latestPosts.map((post, i) => (
-              <div
-                key={post.postId}
-                style={{
-                  background: '#fff', borderRadius: 12, overflow: 'hidden',
-                  border: '1px solid rgba(0,0,0,0.07)', transition: 'all 0.3s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(26,71,49,0.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-              >
-                <div style={{ height: 5, background: i === 0 ? '#1a4731' : i === 1 ? '#c9a84c' : '#40916c' }} />
-                <div style={{
-                  height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: i === 0 ? 'linear-gradient(135deg,#1a4731,#40916c)' : i === 1 ? 'linear-gradient(135deg,#7d5b00,#c9a84c)' : 'linear-gradient(135deg,#256040,#3a7d56)',
-                }}>
-                  <span style={{ fontFamily: 'Georgia,serif', fontSize: 48, color: 'rgba(255,255,255,0.18)', fontStyle: 'italic' }}>
-                    {post.category === 'SERMON' ? '✝' : post.category === 'ANNOUNCEMENT' ? '✦' : '❝'}
+            <article key={post.postId} className="blog-card">
+              {/* Colored top stripe */}
+              <div style={{ height: 5, background: i === 0 ? "var(--green-dark)" : i === 1 ? "var(--gold)" : "var(--green-soft)" }} />
+              {/* Mock image area */}
+              <div style={{ height: 180, background: i === 0 ? "linear-gradient(135deg,#1a4731,#3a7d56)" : i === 1 ? "linear-gradient(135deg,#2d4a10,#5a8c1a)" : "linear-gradient(135deg,#1a2a40,#2a4060)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize: 48, color:"rgba(255,255,255,0.15)", fontStyle:"italic" }}>
+                  {post.category === "SERMON" ? "✝" : post.category === "ANNOUNCEMENT" ? "✦" : "❝"}
+                </span>
+              </div>
+              <div style={{ padding: "24px 26px 28px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                  <span style={{ fontSize: 10, fontFamily:"'Lato',sans-serif", fontWeight:700, letterSpacing:"0.16em",
+                     padding:"4px 10px", borderRadius:2, background: categoryColors[post.category]?.bg, 
+                     color: categoryColors[post.category]?.color }}>
+                    {post.category}
                   </span>
+                  <span style={{ fontSize:12, color:"var(--text-light)", fontFamily:"'Lato',sans-serif" }}>{post.read} read</span>
                 </div>
-                <div style={{ padding: '22px 24px 26px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
-                      padding: '4px 10px', borderRadius: 3,
-                      background: categoryColors[post.category]?.bg || '#e6f4ea',
-                      color: categoryColors[post.category]?.text || '#1a6640',
-                    }}>
-                      {post.category}
-                    </span>
-                    <span style={{ fontSize: 12, color: '#aaa' }}>{formatDate(post.publishedAt)}</span>
-                  </div>
-                  <h3 style={{ fontFamily: 'Georgia,serif', fontSize: 19, fontWeight: 600, color: '#0d2b1a', lineHeight: 1.35, marginBottom: 10 }}>
-                    {post.title}
-                  </h3>
-                  <p style={{ fontSize: 13, color: '#6b8070', lineHeight: 1.7, marginBottom: 18 }}>{post.excerpt}</p>
-                  <Link
-                    to={`/blog/${post.postId}`}
-                    style={{
-                      display: 'block', textAlign: 'center', background: '#c9a84c',
-                      color: '#0d2b1a', padding: '11px', borderRadius: 6,
-                      textDecoration: 'none', fontSize: 12, fontWeight: 700,
-                      letterSpacing: '0.08em', transition: 'background 0.2s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#e0c060'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#c9a84c'}
-                  >
-                    READ MORE
-                  </Link>
+                <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:600, color:"var(--text-dark)", lineHeight:1.3, marginBottom:10 }}>
+                  {post.title}
+                </h3>
+                <p style={{ fontFamily:"'Lato',sans-serif", fontSize:13, color:"var(--text-light)", lineHeight:1.75, marginBottom:20 }}>
+                  {post.excerpt}
+                </p>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", borderTop:"1px solid rgba(0,0,0,0.06)", paddingTop:16 }}>
+                  <span style={{ fontSize:12, color:"var(--text-mid)", fontFamily:"'Lato',sans-serif" }}><strong>{post.author}</strong> · {post.date}</span>
+                  <a href="#" style={{ color:"var(--green-mid)", textDecoration:"none", fontSize:13, fontFamily:"'Lato',sans-serif", display:"flex", alignItems:"center", gap:4, fontWeight:700 }}>
+                    Read <NavIcons.Arrow />
+                  </a>
                 </div>
               </div>
-            ))}
+            </article>
+          ))}
           </div>
 
           <div style={{ textAlign: 'center', marginTop: 44 }}>
@@ -658,6 +679,119 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════
+          STAY INFORMED
+      ═══════════════════════════════════════════ */}
+      <section id="updates" style={{ background: "var(--white)", padding: "100px 24px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(340px,1fr))", gap:64, alignItems:"center" }}>
+            {/* Mosaic placeholder */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gridTemplateRows:"200px 200px", gap:12 }}>
+              {[
+                { bg:"linear-gradient(135deg,#1a4731,#40916c)", text:"Community Life" },
+                { bg:"linear-gradient(135deg,#0d2b1a,#1a4731)", text:"Sunday Worship" },
+                { bg:"linear-gradient(135deg,#7d5b00,#c9a84c)", text:"Youth Programs" },
+                { bg:"linear-gradient(135deg,#256040,#3a7d56)", text:"Outreach" },
+              ].map((b, i) => (
+                <div key={i} style={{ background:b.bg, borderRadius:8, display:"flex", alignItems:"flex-end", padding:16, gridRow: i === 0 ? "span 1" : undefined }}>
+                  <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, color:"rgba(255,255,255,0.65)", fontStyle:"italic" }}>{b.text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Text */}
+            <div>
+              <span className="section-eyebrow">STAY INFORMED</span>
+              <h2 className="section-title" style={{ marginBottom:20 }}>
+                Check Out Our Recent Updates
+              </h2>
+              <p style={{ fontFamily:"'Lato',sans-serif", fontSize:15, color:"var(--text-light)", lineHeight:1.85, marginBottom:16 }}>
+                Stay connected with our community and discover upcoming events and initiatives. We share weekly updates on everything happening across our churches — from local outreach to national conference news.
+              </p>
+              <p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, color:"var(--green-mid)", fontStyle:"italic", marginBottom:32 }}>
+                "Iron sharpens iron, and one person sharpens another." — Proverbs 27:17
+              </p>
+              <a href="#blog" className="btn-gold">LEARN MORE</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          TESTIMONIALS
+      ═══════════════════════════════════════════ */}
+      <section style={{ background: "var(--green-deep)", padding: "100px 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+          <span className="section-eyebrow">WHAT OUR MEMBERS SAY</span>
+          <h2 className="section-title-light" style={{ marginBottom: 60 }}>
+            Voices from Our Community
+          </h2>
+
+          {/* Featured testimonial */}
+          <div style={{ position: "relative", minHeight: 200 }}>
+            {TESTIMONIALS.map((t, i) => (
+              <div
+                key={i}
+                style={{
+                  position: i === activeTestimonial ? "relative" : "absolute",
+                  top: 0, left: 0, right: 0,
+                  opacity: i === activeTestimonial ? 1 : 0,
+                  transition: "opacity 0.6s ease",
+                  padding: "0 24px",
+                }}
+              >
+                <div style={{ marginBottom: 28 }}>
+                  <NavIcons.Quote />
+                </div>
+                <p style={{
+                  fontFamily: "'Cormorant Garamond',serif",
+                  fontSize: "clamp(1.3rem,3vw,1.7rem)",
+                  color: "rgba(255,255,255,0.88)",
+                  fontStyle: "italic", lineHeight: 1.65, marginBottom: 32,
+                }}>
+                  "{t.quote}"
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, justifyContent: "center" }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: "50%",
+                    background: "var(--green-mid)", border: "2px solid var(--gold)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "'Lato',sans-serif", fontWeight: 700, fontSize: 14, color: "var(--gold)",
+                  }}>
+                    {t.avatar}
+                  </div>
+                  <div style={{ textAlign: "left" }}>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontWeight: 700, fontSize: 14, color: "var(--white)" }}>
+                      {t.name}
+                    </div>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: "0.08em" }}>
+                      {t.role}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Dots */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 56 }}>
+            {TESTIMONIALS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTestimonial(i)}
+                style={{
+                  width: i === activeTestimonial ? 24 : 8,
+                  height: 8, borderRadius: 4,
+                  background: i === activeTestimonial ? "var(--gold)" : "rgba(255,255,255,0.2)",
+                  border: "none", cursor: "pointer", transition: "all 0.3s", padding: 0,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+      
 
       {/* ═══════════════════════════════════════════
           NEWSLETTER (unchanged structure, no contact form)
@@ -721,6 +855,10 @@ const HomePage = () => {
           0%,100% { transform:translateX(-50%) translateY(0); }
           50%      { transform:translateX(-50%) translateY(8px); }
         }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Lato', sans-serif; background: #fff; color: #1a1a1a; overflow-x: hidden; }
+
         :root {
           --green-deep:   #0d2b1a;
           --green-dark:   #c9a84c;
@@ -737,17 +875,61 @@ const HomePage = () => {
           --text-light:   #6b8070;
           --border:       rgba(201,168,76,0.18);
         }
+
+        /* Nav */
+        .nav-link { color: rgba(255,255,255,0.88); text-decoration: none; font-family: 'Lato', sans-serif; font-size: 13px; letter-spacing: 0.07em; transition: color 0.2s; }
+        .nav-link:hover { color: var(--gold); }
+        .nav-cta { background: var(--gold); color: var(--green-deep); padding: 10px 24px; border-radius: 3px; text-decoration: none; font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; transition: all 0.2s; }
+        .nav-cta:hover { background: var(--gold-light); }
+
         /* Tiles */
-        .resource-tile { background: #ffffff; border: 1px solid rgba(201,168,76,0.15); border-radius: 10px; padding: 32px 24px; text-align: center; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-        .resource-tile:hover { border-color: #c9a84c; transform: translateY(-6px); box-shadow: 0 20px 48px rgba(26,71,49,0.12); }
-        .resource-tile:hover .tile-icon-wrap { background: #c9a84c; }
-        .resource-tile:hover .tile-icon-wrap svg { stroke: #c9a84c; }
+        .resource-tile { background: var(--white); border: 1px solid rgba(201,168,76,0.15); border-radius: 10px; padding: 32px 24px; text-align: center; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .resource-tile:hover { border-color: var(--gold); transform: translateY(-6px); box-shadow: 0 20px 48px rgba(26,71,49,0.12); }
+        .resource-tile:hover .tile-icon-wrap { background: var(--green-dark); }
+        .resource-tile:hover .tile-icon-wrap svg { stroke: var(--gold); }
+
+        /* Cards */
+        .event-card { background: var(--white); border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); transition: all 0.3s; cursor: pointer; }
+        .event-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(26,71,49,0.13); }
+        .blog-card { background: var(--white); border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); transition: all 0.3s; cursor: pointer; }
+        .blog-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(26,71,49,0.13); }
+        .testimonial-card { background: var(--white); border-radius: 12px; padding: 32px; border: 1px solid rgba(201,168,76,0.12); transition: all 0.3s; }
+        .testimonial-card:hover { border-color: rgba(201,168,76,0.4); box-shadow: 0 8px 32px rgba(26,71,49,0.08); }
+
+        /* Buttons */
+        .btn-gold { background: var(--gold); color: var(--green-deep); border: none; padding: 14px 36px; border-radius: 4px; font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
+        .btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
+        .btn-outline-white { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.5); padding: 14px 36px; border-radius: 4px; font-family: 'Lato', sans-serif; font-size: 13px; letter-spacing: 0.12em; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
+        .btn-outline-white:hover { border-color: var(--gold); color: var(--gold); }
+        .btn-outline-green { background: transparent; color: var(--green-dark); border: 1.5px solid var(--green-dark); padding: 13px 32px; border-radius: 4px; font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
+        .btn-outline-green:hover { background: var(--green-dark); color: var(--white); }
+
+        /* Form */
+        .form-input { width: 100%; padding: 14px 18px; border: 1.5px solid rgba(26,71,49,0.18); border-radius: 6px; font-family: 'Lato', sans-serif; font-size: 14px; color: var(--text-dark); background: #fff; outline: none; transition: border-color 0.2s; }
+        .form-input:focus { border-color: var(--green-mid); }
+        .form-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: var(--text-mid); display: block; margin-bottom: 7px; }
 
         /* Section headers */
         .section-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: var(--gold); font-family: 'Lato', sans-serif; margin-bottom: 12px; display: block; }
         .section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; color: var(--text-dark); line-height: 1.15; }
         .section-title-light { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; color: var(--white); line-height: 1.15; }
         .section-body { font-size: 15px; color: var(--text-light); line-height: 1.8; max-width: 520px; }
+
+         @keyframes fadeInUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+        .fade-in-up { animation: fadeInUp 0.7s ease both; }*/
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f0f0f0; }
+        ::-webkit-scrollbar-thumb { background: var(--green-mid); border-radius: 3px; }
+
+        @media (max-width: 768px) {
+          .desktop-only { display: none !important; }
+          .mobile-only  { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-only { display: none !important; }
+        }
       `}</style>
     </div>
   );
