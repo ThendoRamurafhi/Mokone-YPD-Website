@@ -60,22 +60,22 @@ export const NavIcons = {
       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
     </svg>
   ),
-   resources: () => (
+  Resources: () => (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#256040" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
     </svg>
   ),
-  play: () => (
+  Play: () => (
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="white" stroke="none"/>
     </svg>
   ),
-  arrow: () => (
+  Arrow: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
       <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
     </svg>
   ),
-  quote: () => (
+  Quote: () => (
     <svg width="36" height="28" viewBox="0 0 36 28" fill="none">
       <path d="M0 28V17.6C0 7.87 5.6 2.24 16.8 0l1.68 3.36C12.93 4.8 9.97 7.47 9.24 11.2H16.8V28H0zm19.2 0V17.6C19.2 7.87 24.8 2.24 36 0l1.68 3.36c-5.55 1.44-8.51 4.11-9.24 7.84H36V28H19.2z" fill="#c9a84c" opacity="0.25"/>
     </svg>
