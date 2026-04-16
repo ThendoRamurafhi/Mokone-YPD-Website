@@ -1,24 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import YPDLogo from './YPDLogo';
 
 /* ── YPD SVG Logo — same style as Navigation, fixes the "broken logo" issue ── */
-const YPDLogo = () => (
-  <svg width="42" height="42" viewBox="0 0 42 42" fill="none" aria-label="AME YPD Logo">
-    <circle cx="21" cy="21" r="20" fill="#0d2b1a" stroke="#c9a84c" strokeWidth="1.8"/>
-    <circle cx="21" cy="21" r="15" fill="none" stroke="#c9a84c" strokeWidth="0.6" strokeDasharray="2 2"/>
-    <text
-      x="21" y="25"
-      textAnchor="middle"
-      fill="#c9a84c"
-      fontSize="10"
-      fontWeight="700"
-      fontFamily="Georgia, 'Times New Roman', serif"
-      letterSpacing="1"
-    >
-      YPD
-    </text>
-  </svg>
-);
+// const YPDLogo = () => (
+//   <svg width="42" height="42" viewBox="0 0 42 42" fill="none" aria-label="AME YPD Logo">
+//     <circle cx="21" cy="21" r="20" fill="#0d2b1a" stroke="#c9a84c" strokeWidth="1.8"/>
+//     <circle cx="21" cy="21" r="15" fill="none" stroke="#c9a84c" strokeWidth="0.6" strokeDasharray="2 2"/>
+//     <text
+//       x="21" y="25"
+//       textAnchor="middle"
+//       fill="#c9a84c"
+//       fontSize="10"
+//       fontWeight="700"
+//       fontFamily="Georgia, 'Times New Roman', serif"
+//       letterSpacing="1"
+//     >
+//       YPD
+//     </text>
+//   </svg>
+// );
 
 const Footer = () => {
   return (
@@ -44,7 +45,7 @@ const Footer = () => {
           {/* Brand column */}
           <div style={{ gridColumn: 'span 1' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <YPDLogo />
+              <YPDLogo width={42} height={42} />
               <div>
                 <div
                   style={{
@@ -176,10 +177,10 @@ const Footer = () => {
             </h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {[
-                { icon: '📧', text: 'info@mokonypd.org' },
-                { icon: '📞', text: '+27 12 345 6789'   },
-                { icon: '📍', text: 'Pretoria, South Africa' },
-                { icon: '🕐', text: 'Mon–Fri: 08:00–17:00' },
+                { text: 'info@mokonypd.org' },
+                { text: '+27 12 345 6789'   },
+                { text: 'Pretoria, South Africa' },
+                { text: 'Mon–Fri: 08:00–17:00' },
               ].map(item => (
                 <li key={item.text} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
                   <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
