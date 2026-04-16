@@ -2,18 +2,20 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { NavIcons } from './NavIcons';
+import YPDLogo from './YPDLogo';
 
+// The local const YPDLogo = () => (<svg .../>)  ← DELETE this
 /* ── Inline SVG icons matching your screenshot exactly ── */
 
 
 /* ── YPD Logo ── */
-const YPDLogo = () => (
-  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-    <circle cx="20" cy="20" r="19" fill="#0d2b1a" stroke="#c9a84c" strokeWidth="1.8"/>
-    <circle cx="20" cy="20" r="15" fill="none" stroke="#c9a84c" strokeWidth="0.6" strokeDasharray="2 2"/>
-    <text x="20" y="24" textAnchor="middle" fill="#c9a84c" fontSize="10" fontWeight="700" fontFamily="Georgia,serif" letterSpacing="1">YPD</text>
-  </svg>
-);
+// const YPDLogo = () => (
+//   <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+//     <circle cx="20" cy="20" r="19" fill="#0d2b1a" stroke="#c9a84c" strokeWidth="1.8"/>
+//     <circle cx="20" cy="20" r="15" fill="none" stroke="#c9a84c" strokeWidth="0.6" strokeDasharray="2 2"/>
+//     <text x="20" y="24" textAnchor="middle" fill="#c9a84c" fontSize="10" fontWeight="700" fontFamily="Georgia,serif" letterSpacing="1">YPD</text>
+//   </svg>
+// );
 
 const NAV_ITEMS = [
   { label: 'Home',          to: '/',           Icon: NavIcons.Home         },
