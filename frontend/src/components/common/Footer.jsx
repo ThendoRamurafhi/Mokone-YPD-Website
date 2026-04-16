@@ -1,54 +1,211 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+/* ── YPD SVG Logo — same style as Navigation, fixes the "broken logo" issue ── */
+const YPDLogo = () => (
+  <svg width="42" height="42" viewBox="0 0 42 42" fill="none" aria-label="AME YPD Logo">
+    <circle cx="21" cy="21" r="20" fill="#0d2b1a" stroke="#c9a84c" strokeWidth="1.8"/>
+    <circle cx="21" cy="21" r="15" fill="none" stroke="#c9a84c" strokeWidth="0.6" strokeDasharray="2 2"/>
+    <text
+      x="21" y="25"
+      textAnchor="middle"
+      fill="#c9a84c"
+      fontSize="10"
+      fontWeight="700"
+      fontFamily="Georgia, 'Times New Roman', serif"
+      letterSpacing="1"
+    >
+      YPD
+    </text>
+  </svg>
+);
+
 const Footer = () => {
   return (
-    <footer style={{ background:"var(--green-deep)", borderTop:"1px solid rgba(201,168,76,0.12)", padding:"72px 24px 32px" }}>
-      <div style={{ maxWidth:1200, margin:"0 auto" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:48, marginBottom:56 }}>
+    <footer
+      style={{
+        backgroundColor: '#071812',
+        borderTop: '1px solid rgba(201,168,76,0.15)',
+        fontFamily: "'Lato', sans-serif",
+        marginTop: 'auto',
+      }}
+    >
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px 28px' }}>
 
-          {/* Logo and Description */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center font-bold text-white text-sm">
-                YPD
+        {/* ── Main grid ── */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '48px',
+            marginBottom: 48,
+          }}
+        >
+          {/* Brand column */}
+          <div style={{ gridColumn: 'span 1' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <YPDLogo />
+              <div>
+                <div
+                  style={{
+                    fontFamily: 'Georgia, serif',
+                    color: '#c9a84c',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  AME Church YPD
+                </div>
+                <div
+                  style={{
+                    color: 'rgba(255,255,255,0.35)',
+                    fontSize: 9,
+                    letterSpacing: '0.18em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Young People's Division
+                </div>
               </div>
-              <span className="text-xl font-bold">AME Church YPD</span>
             </div>
-            
-            <p style={{ fontFamily:"'Lato',sans-serif", fontSize:13, color:"rgba(255,255,255,0.4)", lineHeight:1.85, maxWidth:240 }}>
-              Building the next generation for the Kingdom. Join us in spiritual growth and community through Mokone YPD Conference.
+
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, lineHeight: 1.85, maxWidth: 240, marginBottom: 16 }}>
+              The Young People's Division of the African Methodist Episcopal Church.
+              Empowering youth and young adults to grow in faith, leadership, and community.
             </p>
-            <p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:14, color:"rgba(201,168,76,0.5)", fontStyle:"italic", marginTop:16 }}>
+
+            <p
+              style={{
+                fontFamily: 'Georgia, serif',
+                fontStyle: 'italic',
+                fontSize: 13,
+                color: 'rgba(201,168,76,0.5)',
+                marginBottom: 20,
+              }}
+            >
               "The kingdom of God is within you." — Luke 17:21
             </p>
-          </div>
 
-         {[
-            { title:"Navigate",   links:["Home","About Us","Events","Blog","Church Finder","Media","Structure","Contact"] },
-            { title:"Community",  links:["Register","Login","Prayer Requests","Newsletter","Volunteer"] },
-            { title:"Contact",    links:["info@mokonypd.org","+27 12 345 6789","Pretoria, South Africa","Mon–Fri: 08:00–17:00"] },
-          ].map(col => (
-            <div key={col.title}>
-              <div style={{ fontFamily:"'Lato',sans-serif", fontSize:10, fontWeight:700, letterSpacing:"0.22em", color:"var(--gold)", marginBottom:20 }}>{col.title.toUpperCase()}</div>
-              {col.links.map(link => (
-                <div key={link} style={{ marginBottom:10 }}>
-                  <a href="#" style={{ fontFamily:"'Lato',sans-serif", fontSize:13, color:"rgba(255,255,255,0.45)", textDecoration:"none", transition:"color 0.2s" }}
-                    onMouseEnter={e=>e.target.style.color="var(--gold)"}
-                    onMouseLeave={e=>e.target.style.color="rgba(255,255,255,0.45)"}>
-                    {link}
-                  </a>
-                </div>
+            {/* Social links */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              {['Facebook', 'Instagram', 'YouTube'].map(s => (
+                <a
+                  key={s}
+                  href="#"
+                  style={{
+                    padding: '6px 12px',
+                    border: '1px solid rgba(201,168,76,0.25)',
+                    borderRadius: 4,
+                    color: 'rgba(255,255,255,0.5)',
+                    textDecoration: 'none',
+                    fontSize: 11,
+                    letterSpacing: '0.06em',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#c9a84c'; e.currentTarget.style.color = '#c9a84c'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
+                >
+                  {s}
+                </a>
               ))}
             </div>
-          ))}
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 style={{ color: '#c9a84c', fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 20 }}>
+              Quick Links
+            </h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {[
+                { label: 'Home',          to: '/'         },
+                { label: 'About Us',      to: '/about'    },
+                { label: 'Events',        to: '/events'   },
+                { label: 'Blog',          to: '/blog'     },
+                { label: 'Church Finder', to: '/charges'  },
+                { label: 'Media',         to: '/media'    },
+                { label: 'Structure',     to: '/structure'},
+                { label: 'Contact',       to: '/contact'  },
+              ].map(link => (
+                <li key={link.to} style={{ marginBottom: 10 }}>
+                  <Link
+                    to={link.to}
+                    style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'none', fontSize: 13, transition: 'color 0.2s' }}
+                    onMouseEnter={e => e.target.style.color = '#c9a84c'}
+                    onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.45)'}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Community */}
+          <div>
+            <h3 style={{ color: '#c9a84c', fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 20 }}>
+              Community
+            </h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {[
+                { label: 'Register',        to: '/register' },
+                { label: 'Login',           to: '/login'    },
+                { label: 'Prayer Requests', to: '/contact'  },
+                { label: 'Newsletter',      to: '/#newsletter' },
+                { label: 'Volunteer',       to: '/contact'  },
+              ].map(link => (
+                <li key={link.label} style={{ marginBottom: 10 }}>
+                  <Link
+                    to={link.to}
+                    style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'none', fontSize: 13, transition: 'color 0.2s' }}
+                    onMouseEnter={e => e.target.style.color = '#c9a84c'}
+                    onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.45)'}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h3 style={{ color: '#c9a84c', fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 20 }}>
+              Contact Us
+            </h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {[
+                { icon: '📧', text: 'info@mokonypd.org' },
+                { icon: '📞', text: '+27 12 345 6789'   },
+                { icon: '📍', text: 'Pretoria, South Africa' },
+                { icon: '🕐', text: 'Mon–Fri: 08:00–17:00' },
+              ].map(item => (
+                <li key={item.text} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+                  <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, lineHeight: 1.5 }}>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:24, display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
-          <p style={{ fontFamily:"'Lato',sans-serif", fontSize:12, color:"rgba(255,255,255,0.25)" }}>
+        {/* ── Bottom bar ── */}
+        <div
+          style={{
+            borderTop: '1px solid rgba(255,255,255,0.07)',
+            paddingTop: 24,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 10,
+          }}
+        >
+          <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12 }}>
             © {new Date().getFullYear()} AME Church Young People's Division. All rights reserved.
           </p>
-          <p style={{ fontFamily:"'Lato',sans-serif", fontSize:12, color:"rgba(255,255,255,0.18)" }}>
+          <p style={{ color: 'rgba(255,255,255,0.18)', fontSize: 12 }}>
             Built for the Kingdom · Mokone YPD Conference
           </p>
         </div>
