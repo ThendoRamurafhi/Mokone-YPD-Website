@@ -561,7 +561,7 @@ const HomePage = () => {
                 "The kingdom of God is within you — not in outward signs,<br />but in the transformation of the heart."
               </p>
               <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 36 }}>
-                — Rev. John Doe · Luke 17:20–21
+                — Rev. John Doe · Luke 17:20-21
               </p>
               <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.8, marginBottom: 36 }}>
                 Tune in to our latest sermon where we dive deep into faith and inspiration. Experience spiritual renewal and discover the Kingdom within you this week.
@@ -582,16 +582,15 @@ const HomePage = () => {
               <div style={{ position: "absolute", width: 2, height: "60%", background: "rgba(201,168,76,0.15)", top: "20%", left: "50%" }} />
               <div style={{ position: "absolute", height: 2, width: "40%", background: "rgba(201,168,76,0.15)", top: "35%", left: "30%" }} />
 
-              {!playing ? (
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(201,168,76,0.2)", border: "2px solid var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                    <NavIcons.Play />
-                  </div>
-                  <p style={{ fontFamily: "'Cormorant Garamond',serif", color: "rgba(255,255,255,0.6)", fontSize: 15 }}>Click to Watch Sermon</p>
-                </div>
-              ) : (
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", borderRadius: 12 }} allowFullScreen title="Sermon" />
-              )}
+              {playing ? 
+                               <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", borderRadius: 12 }} allowFullScreen title="Sermon" />
+                              : 
+                               <div style={{ textAlign: "center" }}>
+                                 <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(201,168,76,0.2)", border: "2px solid var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                                   <NavIcons.Play />
+                                 </div>
+                                 <p style={{ fontFamily: "'Cormorant Garamond',serif", color: "rgba(255,255,255,0.6)", fontSize: 15 }}>Click to Watch Sermon</p>
+                               </div>}
             </div>
 
             {/* Features below video - Wix-style */}
