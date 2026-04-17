@@ -13,12 +13,15 @@ import ContactPage from './pages/ContactPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ScrollToTop from './components/common/ScrollToTop';
+import StructurePage  from './pages/StructurePage';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
+          <div className="flex flex-col min-h-screen">
           <Navigation />
           <main className="flex-grow">
             <Routes>
@@ -32,6 +35,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+              <Route path="/structure" element={<StructurePage />} />
               <Route path="*" element={<HomePage />} />
             </Routes>
           </main>
