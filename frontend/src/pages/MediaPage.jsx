@@ -1,210 +1,128 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const MediaPage = () => {
-  const [selectedType, setSelectedType] = useState('ALL');
-  const [selectedMedia, setSelectedMedia] = useState(null);
-  const [loading] = useState(false);
+  const [activeTab, setActiveTab] = useState('PHOTOS');
+  const [lightbox, setLightbox] = useState(null);
 
   const mediaItems = [
-    {
-      mediaId: 1,
-      title: 'Youth Conference 2025 Highlights',
-      mediaType: 'VIDEO',
-      thumbnail: null,
-      category: 'Events',
-      description: 'Highlights from our amazing Youth Conference 2025.',
-      fileUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    },
-    {
-      mediaId: 2,
-      title: 'Community Outreach Day Photos',
-      mediaType: 'IMAGE',
-      thumbnail: null,
-      category: 'Outreach',
-      description: 'Photos from our community outreach day.',
-    },
-    {
-      mediaId: 3,
-      title: 'Sunday Worship Service',
-      mediaType: 'VIDEO',
-      thumbnail: null,
-      category: 'Worship',
-      description: 'Recording of our Sunday worship service.',
-      fileUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    },
-    {
-      mediaId: 4,
-      title: 'Annual Conference 2025',
-      mediaType: 'IMAGE',
-      thumbnail: null,
-      category: 'Events',
-      description: 'Photos from our Annual Conference 2025.',
-    },
-    {
-      mediaId: 5,
-      title: 'Youth Leadership Training',
-      mediaType: 'IMAGE',
-      thumbnail: null,
-      category: 'Training',
-      description: 'Photos from our Youth Leadership Training program.',
-    },
-    {
-      mediaId: 6,
-      title: 'Christmas Service 2025',
-      mediaType: 'VIDEO',
-      thumbnail: null,
-      category: 'Worship',
-      description: 'Recording of our Christmas worship service.',
-      fileUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    },
+    { id:1,  type:'IMAGE', title:'Youth Conference Highlights',    category:'Events',   gradient:'linear-gradient(135deg,#1a4731,#40916c)' },
+    { id:2,  type:'IMAGE', title:'Community Outreach Day',         category:'Outreach', gradient:'linear-gradient(135deg,#0d2b1a,#256040)' },
+    { id:3,  type:'IMAGE', title:'Sunday Worship Service',         category:'Worship',  gradient:'linear-gradient(135deg,#7d5b00,#c9a84c)' },
+    { id:4,  type:'IMAGE', title:'Annual Conference 2025',         category:'Events',   gradient:'linear-gradient(135deg,#1a2a40,#2a4060)' },
+    { id:5,  type:'IMAGE', title:'Youth Leadership Training',      category:'Training', gradient:'linear-gradient(135deg,#2a1a40,#5a2a80)' },
+    { id:6,  type:'IMAGE', title:'Community Prayer Night',         category:'Worship',  gradient:'linear-gradient(135deg,#1a4020,#40916c)' },
+    { id:7,  type:'VIDEO', title:'Youth Conference 2025 Recap',    category:'Events',   gradient:'linear-gradient(135deg,#1a4731,#40916c)', ytId:'dQw4w9WgXcQ' },
+    { id:8,  type:'VIDEO', title:'Sunday Worship — Full Service',  category:'Worship',  gradient:'linear-gradient(135deg,#0d2b1a,#1a4731)', ytId:'dQw4w9WgXcQ' },
+    { id:9,  type:'VIDEO', title:'Christmas Service 2025',         category:'Worship',  gradient:'linear-gradient(135deg,#7d5b00,#c9a84c)', ytId:'dQw4w9WgXcQ' },
+    { id:10, type:'AUDIO', title:'Faith in Action — Sermon',       category:'Sermons',  gradient:'linear-gradient(135deg,#1a4731,#256040)' },
+    { id:11, type:'AUDIO', title:'Prayer & Intercession Session',  category:'Prayer',   gradient:'linear-gradient(135deg,#0d2b1a,#40916c)' },
+    { id:12, type:'AUDIO', title:'Gospel Music — Praise Night',    category:'Music',    gradient:'linear-gradient(135deg,#7d5b00,#c9a84c)' },
   ];
 
-  const types = ['ALL', 'IMAGE', 'VIDEO'];
-
-  const filteredMedia = selectedType === 'ALL'
-    ? mediaItems
-    : mediaItems.filter(item => item.mediaType === selectedType);
+  const photos = mediaItems.filter(m=>m.type==='IMAGE');
+  const videos = mediaItems.filter(m=>m.type==='VIDEO');
+  const audios = mediaItems.filter(m=>m.type==='AUDIO');
+  const current = activeTab==='PHOTOS'?photos:activeTab==='VIDEOS'?videos:audios;
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-emerald-800 to-emerald-900 text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-6">Media Gallery</h1>
-          <p className="text-xl text-emerald-200 max-w-2xl mx-auto">
-            Photos and videos from our events, services
-            and community activities.
-          </p>
+    <div style={{ fontFamily:"'Lato',sans-serif", paddingTop:64 }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lato:wght@300;400;700&display=swap');
+        .media-card{border-radius:12px;overflow:hidden;cursor:pointer;transition:all .3s;}
+        .media-card:hover{transform:scale(1.02);box-shadow:0 16px 40px rgba(0,0,0,.25);}
+        .tab-btn{padding:12px 28px;border:none;font-family:'Lato',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:all .25s;border-bottom:3px solid transparent;}
+        .tab-btn.active{color:#1a4731;border-bottom-color:#c9a84c;background:transparent;}
+        .tab-btn:not(.active){color:#6b8070;background:transparent;}
+        .tab-btn:hover:not(.active){color:#1a4731;}`}</style>
+
+      {/* HERO */}
+      <div style={{ background:'linear-gradient(150deg,#071812,#0d2b1a 50%,#1a4731)', padding:'120px 24px 80px', textAlign:'center' }}>
+        <span style={{ fontFamily:'Lato,sans-serif', fontSize:10, fontWeight:700, letterSpacing:'.24em', color:'#c9a84c', display:'block', marginBottom:12 }}>MOKONE YPD CONFERENCE</span>
+        <h1 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(2.4rem,5vw,4rem)', fontWeight:700, color:'#fff', lineHeight:1.1, marginBottom:16 }}>Moments of Worship</h1>
+        <p style={{ fontFamily:'Lato,sans-serif', fontSize:15, color:'rgba(255,255,255,.6)', maxWidth:540, margin:'0 auto', lineHeight:1.8 }}>
+          Explore our vibrant photo gallery, inspiring videos and faithful audio content highlighting special church events, community gatherings and worship services.
+        </p>
+      </div>
+
+      {/* MASONRY PHOTO HIGHLIGHT (Wix style — big grid) */}
+      <section style={{ background:'#0d2b1a', padding:'0' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gridTemplateRows:'200px 200px', gap:3 }}>
+          {photos.slice(0,6).map((m,i) => (
+            <div key={m.id} onClick={()=>setLightbox(m)} className="media-card" style={{ borderRadius:0, background:m.gradient, gridColumn: i===0?'span 2':i===3?'span 2':'span 1', display:'flex', alignItems:'flex-end', padding:16 }}>
+              <span style={{ fontFamily:'Georgia,serif', fontSize:13, color:'rgba(255,255,255,.6)', fontStyle:'italic' }}>{m.title}</span>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Filter Section */}
-      <section className="bg-white shadow-md py-6">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-3 justify-center">
-            {types.map((type) => (
-              <button
-                key={type}
-                onClick={() => setSelectedType(type)}
-                className={`px-6 py-2 rounded-full font-semibold transition ${
-                  selectedType === type
-                    ? 'bg-emerald-700 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-emerald-100'
-                }`}
-              >
-                {type === 'ALL' ? '🎬 All Media' :
-                 type === 'IMAGE' ? '🖼️ Photos' : '📹 Videos'}
-              </button>
+      {/* TABS */}
+      <div style={{ background:'#fff', borderBottom:'1px solid rgba(0,0,0,.08)', position:'sticky', top:64, zIndex:10 }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 24px', display:'flex', gap:0 }}>
+          {[['PHOTOS','🖼️ Moments of Worship'],['VIDEOS','🎬 Inspiring Faith Content'],['AUDIO','🎵 Faithful Soundtrack']].map(([t,l]) => (
+            <button key={t} className={`tab-btn${activeTab===t?' active':''}`} onClick={()=>setActiveTab(t)}>{l}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* CONTENT GRID */}
+      <section style={{ background:'#f7f9f7', padding:'60px 24px 80px' }}>
+        <div style={{ maxWidth:1200, margin:'0 auto' }}>
+          <div style={{ marginBottom:32 }}>
+            <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.6rem,3vw,2.2rem)', fontWeight:700, color:'#0d2b1a', marginBottom:10 }}>
+              {activeTab==='PHOTOS'?'Moments of Worship':activeTab==='VIDEOS'?'Inspiring Faith Content':'Faithful Soundtrack'}
+            </h2>
+            <p style={{ fontSize:14, color:'#6b8070', lineHeight:1.7, maxWidth:540 }}>
+              {activeTab==='PHOTOS'?'Experience the heart of Mokone YPD through these cherished moments.':activeTab==='VIDEOS'?'Dive into our video library featuring sermons, testimonials and educational content.':'Listen to uplifting audio sermons, prayers and gospel music.'}
+            </p>
+          </div>
+
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:20 }}>
+            {current.map(item => (
+              <div key={item.id} className="media-card" onClick={()=>setLightbox(item)} style={{ background:item.gradient, aspectRatio:'4/3', position:'relative', display:'flex', flexDirection:'column', justifyContent:'space-between', padding:18 }}>
+                {/* Play button for video/audio */}
+                {item.type!=='IMAGE' && (
+                  <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <div style={{ width:56, height:56, borderRadius:'50%', background:'rgba(201,168,76,.25)', border:'2px solid rgba(201,168,76,.6)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                    </div>
+                  </div>
+                )}
+                <div style={{ alignSelf:'flex-start', background:'rgba(0,0,0,.35)', padding:'4px 10px', borderRadius:3, fontSize:10, fontWeight:700, letterSpacing:'.1em', color:'rgba(255,255,255,.85)' }}>
+                  {item.category}
+                </div>
+                <div>
+                  <p style={{ fontFamily:'Georgia,serif', fontSize:14, color:'rgba(255,255,255,.85)', fontStyle:'italic', marginBottom:4 }}>{item.title}</p>
+                  <p style={{ fontSize:10, color:'rgba(255,255,255,.45)', letterSpacing:'.1em', fontWeight:700 }}>{item.type}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Media Grid */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          {loading ? (
-            <LoadingSpinner />
-          ) : filteredMedia.length > 0 ? (
-            <>
-              <p className="text-gray-600 mb-8 text-center">
-                Showing {filteredMedia.length} item{filteredMedia.length !== 1 ? 's' : ''}
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredMedia.map((item) => (
-                  <div
-                    key={item.mediaId}
-                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden cursor-pointer"
-                    onClick={() => setSelectedMedia(item)}
-                  >
-                    {/* Thumbnail */}
-                    <div className="w-full h-48 bg-emerald-100 flex items-center justify-center relative">
-                      <span className="text-6xl">
-                        {item.mediaType === 'VIDEO' ? '🎬' : '🖼️'}
-                      </span>
-                      {item.mediaType === 'VIDEO' && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-16 h-16 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                            <span className="text-white text-2xl ml-1">▶</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          item.mediaType === 'VIDEO'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {item.mediaType === 'VIDEO' ? '📹 Video' : '🖼️ Photo'}
-                        </span>
-                        <span className="text-xs text-gray-500">{item.category}</span>
-                      </div>
-                      <h3 className="text-lg font-bold text-emerald-800 mb-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🎬</div>
-              <h3 className="text-2xl font-bold text-gray-600 mb-2">
-                No media found
-              </h3>
-              <p className="text-gray-500">
-                Check back soon for photos and videos!
-              </p>
+      {/* LIGHTBOX */}
+      {lightbox && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.85)', zIndex:300, display:'flex', alignItems:'center', justifyContent:'center', padding:24 }} onClick={()=>setLightbox(null)}>
+          <div style={{ background:'#fff', borderRadius:14, maxWidth:700, width:'100%', overflow:'hidden' }} onClick={e=>e.stopPropagation()}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', borderBottom:'1px solid rgba(0,0,0,.07)' }}>
+              <h3 style={{ fontFamily:'Georgia,serif', fontSize:19, color:'#0d2b1a' }}>{lightbox.title}</h3>
+              <button onClick={()=>setLightbox(null)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#6b8070' }}>✕</button>
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* Media Modal */}
-      {selectedMedia && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedMedia(null)}
-        >
-          <div
-            className="bg-white rounded-lg max-w-2xl w-full overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-xl font-bold text-emerald-800">
-                {selectedMedia.title}
-              </h3>
-              <button
-                onClick={() => setSelectedMedia(null)}
-                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-4">
-              {selectedMedia.mediaType === 'VIDEO' ? (
-                <iframe
-                  src={selectedMedia.fileUrl}
-                  title={selectedMedia.title}
-                  className="w-full h-64 rounded"
-                  allowFullScreen
-                />
+            <div style={{ background:lightbox.gradient, height:320, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              {lightbox.ytId ? (
+                <iframe src={`https://www.youtube.com/embed/${lightbox.ytId}?autoplay=1`} style={{ width:'100%', height:'100%', border:'none' }} allowFullScreen title={lightbox.title} />
               ) : (
-                <div className="w-full h-64 bg-emerald-100 flex items-center justify-center rounded">
-                  <span className="text-8xl">🖼️</span>
-                </div>
+                <span style={{ fontFamily:'Georgia,serif', fontSize:80, color:'rgba(255,255,255,.15)', fontStyle:'italic' }}>
+                  {lightbox.type==='AUDIO'?'♪':'🖼'}
+                </span>
               )}
-              <p className="text-gray-600 mt-4">{selectedMedia.description}</p>
             </div>
+            {lightbox.type==='AUDIO' && (
+              <div style={{ padding:'20px 24px', background:'#f7f9f7' }}>
+                <audio controls style={{ width:'100%' }}><source src="#" type="audio/mp3" /></audio>
+              </div>
+            )}
           </div>
         </div>
       )}
