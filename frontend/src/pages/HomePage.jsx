@@ -154,7 +154,7 @@ const HomePage = () => {
           All 8 tiles — each uses <Link to="...">
       ══════════════════════════════════════ */}
       <section id="welcome" style={{ background:'var(--cream)', padding:'100px 24px' }}>
-        <div style={{ maxWidth:1200, margin:'0 auto' }}>
+        <div style={{ maxWidth:1300, margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:64 }}>
             <span className="section-eyebrow">WELCOME</span>
             <h2 className="section-title" style={{ marginBottom:16 }}>
@@ -294,8 +294,8 @@ const HomePage = () => {
       {/* ══════════════════════════════════════
           SERMON SECTION
       ══════════════════════════════════════ */}
-      <section id="media" style={{ background:'var(--green-deep)', padding:'100px 24px', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', inset:0, backgroundImage:'repeating-linear-gradient(90deg,transparent,transparent 80px,rgba(201,168,76,0.03) 80px,rgba(201,168,76,0.03) 81px)', pointerEvents:'none' }} />
+      <section id="media" style={{ background:'#0d2b1a', padding:'100px 24px', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', inset:0, backgroundImage:'repeating-linear-gradient(90deg,transparent,transparent 80px,rgba(200,168,76,0.03) 80px,rgba(201,168,76,0.03) 81px)', pointerEvents:'none' }} />
         <div style={{ maxWidth:1200, margin:'0 auto', position:'relative' }}>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(340px,1fr))', gap:64, alignItems:'center' }}>
             <div>
@@ -422,7 +422,7 @@ const HomePage = () => {
       {/* ══════════════════════════════════════
           TESTIMONIALS
       ══════════════════════════════════════ */}
-      <section style={{ background:'var(--green-deep)', padding:'100px 24px' }}>
+      <section style={{ background:'var(--green-soft)', padding:'100px 24px' }}>
         <div style={{ maxWidth:900, margin:'0 auto', textAlign:'center' }}>
           <span className="section-eyebrow">WHAT OUR MEMBERS SAY</span>
           <h2 className="section-title-light" style={{ marginBottom:60 }}>Voices from Our Community</h2>
