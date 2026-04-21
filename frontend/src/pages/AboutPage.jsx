@@ -193,7 +193,7 @@ const AboutPage = () => {
             <span className="eyebrow">WHAT WE BELIEVE</span>
             <h2 style={{ fontFamily:'Georgia,serif', fontSize:'clamp(1.8rem,3vw,2.6rem)', fontWeight:700, color:'var(--td)' }}>Our Core Values</h2>
           </div>
-          <div className="grid-4" style={{ gap:20 }}>
+          <div className="grid-4" style={{ gap:10 }}>
             {values.map((v,i) => (
               <div key={i} style={{ background:'#fff', borderRadius:10, padding:'28px 22px', textAlign:'center', border:'1px solid rgba(0,0,0,.07)', transition:'all .3s', cursor:'default' }}
                 onMouseEnter={e=>{ e.currentTarget.style.borderColor='var(--gold)'; e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 32px rgba(26,71,49,.1)'; }}
