@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import authService from '../services/authService';
 import YPDLogo from '../components/common/YPDLogo';
 
 const LoginPage = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState(null);
-  const { login } = useAuth();
-  const navigate  = useNavigate();
+  const [email,    setEmail]    = useState('');
+  const [password, setPassword] = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState(null);
 
-  // ── Scroll to top on mount ──────────────────────────
+  const { login, isAuthenticated } = useAuth();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const from      = location.state?.from?.pathname || '/';
+
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  const onSubmit = async (data) => {
+  // If already logged in, skip the page entirely
+  useEffect(() => { if (isAuthenticated()) navigate(from, { replace: true }); }, [isAuthenticated]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const response = await authService.login(data.email, data.password);
-      login(response.user, response.token);
-      navigate('/');
+      await login(email, password);
+      navigate(from, { replace: true });
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      setError(typeof err === 'string' ? err : 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }
