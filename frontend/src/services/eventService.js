@@ -1,34 +1,27 @@
-import api from './api';
+//import api from './api';
 
 const eventService = {
-  getAllEvents: async (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
-    return await api.get(`/events?${queryString}`);
-  },
 
-  getEventById: async (eventId) => {
-    return await api.get(`/events/${eventId}`);
-  },
+  // GET /api/v1/events?page=0&size=10&category=YOUTH
+  getAll: (params = {}) => api.get('/events', { params }),
 
-  createEvent: async (eventData) => {
-    return await api.post('/events', eventData);
-  },
+  // GET /api/v1/events/:id
+  getById: (id) => api.get(`/events/${id}`),
 
-  updateEvent: async (eventId, eventData) => {
-    return await api.put(`/events/${eventId}`, eventData);
-  },
+  // POST /api/v1/events  (ADMIN only)
+  create: (data) => api.post('/events', data),
 
-  deleteEvent: async (eventId) => {
-    return await api.delete(`/events/${eventId}`);
-  },
+  // PUT /api/v1/events/:id  (ADMIN only)
+  update: (id, data) => api.put(`/events/${id}`, data),
 
-  submitRSVP: async (eventId, rsvpData) => {
-    return await api.post(`/events/${eventId}/rsvp`, rsvpData);
-  },
+  // DELETE /api/v1/events/:id  (ADMIN only)
+  remove: (id) => api.delete(`/events/${id}`),
 
-  getEventRSVPs: async (eventId) => {
-    return await api.get(`/events/${eventId}/rsvps`);
-  }
+  // POST /api/v1/events/:id/rsvp
+  rsvp: (eventId, rsvpData) => api.post(`/events/${eventId}/rsvp`, rsvpData),
+
+  // GET /api/v1/events/:id/rsvps  (ADMIN only)
+  getRsvps: (eventId) => api.get(`/events/${eventId}/rsvps`),
 };
 
 export default eventService;
