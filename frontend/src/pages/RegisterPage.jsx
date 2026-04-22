@@ -1,27 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../hooks/useAuth';
 import authService from '../services/authService';
+import YPDLogo from '../components/common/YPDLogo';
 
 const RegisterPage = () => {
-  const [formData, setFormData] = useState({ firstName:'', lastName:'', username:'', email:'', phone:'', password:'', confirmPassword:'' });
+  const [form,    setForm]    = useState({ firstName:'', lastName:'', username:'', email:'', phone:'', password:'', confirmPassword:'' });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error,   setError]   = useState(null);
 
-  const handleSubmit = async e => {
+  const { register } = useAuth();
+  const navigate     = useNavigate();
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if(formData.password !== formData.confirmPassword) { setError('Passwords do not match.'); return; }
-    setLoading(true); setError(null);
-    setTimeout(() => setLoading(false), 1000);
+    if (form.password !== form.confirmPassword) { setError('Passwords do not match.'); return; }
+    if (form.password.length < 8)              { setError('Password must be at least 8 characters.'); return; }
+    setLoading(true);
+    setError(null);
+    try {
+      await register({ username:form.username, email:form.email, password:form.password, firstName:form.firstName, lastName:form.lastName, phone:form.phone });
+      navigate('/');
+    } catch (err) {
+      setError(typeof err === 'string' ? err : err?.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const field = (k, l, ph, t='text', req=false) => (
-    <div key={k} style={{ marginBottom:16 }}>
-      <label style={{ display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'#3d5247', marginBottom:8 }}>{l}</label>
-      <input type={t} required={req} placeholder={ph} value={formData[k]} onChange={e=>setFormData({...formData,[k]:e.target.value})}
-        style={{ width:'100%', padding:'13px 16px', border:'1.5px solid rgba(26,71,49,.2)', borderRadius:8, fontSize:14, outline:'none', fontFamily:"'Lato',sans-serif", boxSizing:'border-box', transition:'border-color .2s' }}
-        onFocus={e=>e.target.style.borderColor='#1a4731'} onBlur={e=>e.target.style.borderColor='rgba(26,71,49,.2)'} />
+  const field = (key, label, ph, type='text') => (
+    <div style={{ marginBottom:14 }}>
+      <label style={{ display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'#3d5247', marginBottom:7 }}>{label}</label>
+      <input type={type} required={key!=='phone'} value={form[key]} onChange={e=>setForm({...form,[key]:e.target.value})} placeholder={ph} className="li" />
     </div>
   );
 
@@ -31,12 +44,12 @@ const RegisterPage = () => {
       <div style={{ width:'100%', maxWidth:480 }}>
         {/* Logo */}
         <div style={{ textAlign:'center', marginBottom:36 }}>
-          <div style={{ display:'flex', justifyContent:'center', marginBottom:18 }}>
-            <svg width="72" height="72" viewBox="0 0 72 72" fill="none"><circle cx="36" cy="36" r="34" fill="#0d2b1a" stroke="#c9a84c" strokeWidth="2"/><circle cx="36" cy="36" r="27" fill="none" stroke="#c9a84c" strokeWidth=".7" strokeDasharray="2 3"/><text x="36" y="42" textAnchor="middle" fill="#c9a84c" fontSize="15" fontWeight="700" fontFamily="Georgia,serif" letterSpacing="1.5">YPD</text></svg>
-          </div>
-          <h1 style={{ fontFamily:'Georgia,serif', fontSize:28, fontWeight:700, color:'#fff', marginBottom:8 }}>Join Our Community</h1>
-          <p style={{ fontSize:14, color:'rgba(255,255,255,.5)' }}>Create your Mokone YPD account</p>
-        </div>
+                  <div style={{ display:'flex', justifyContent:'center', marginBottom:14 }}>
+                    <YPDLogo width={80} height={80} />
+                  </div>
+                  <h1 style={{ fontFamily:'Georgia,serif', fontSize:24, fontWeight:700, color:'#fff', marginBottom:6 }}>Join Our Community</h1>
+                  <p style={{ fontSize:13, color:'rgba(255,255,255,.5)' }}>Create your Mokone YPD account</p>
+                </div>
 
         <div style={{ background:'#fff', borderRadius:14, padding:'36px 32px', boxShadow:'0 24px 60px rgba(0,0,0,.3)' }}>
           {error && (
