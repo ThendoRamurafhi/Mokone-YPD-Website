@@ -1,82 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import eventService from '../services/eventService';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import { useAuth } from '../hooks/useAuth';
 
 const EventsPage = () => {
-  const [events,           setEvents]           = useState([]);
-  const [loading,          setLoading]          = useState(true);
-  const [error,            setError]            = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [view,             setView]             = useState('grid');
-  const [rsvpEvent,        setRsvpEvent]        = useState(null);
-  const [rsvpForm,         setRsvpForm]         = useState({ name:'', email:'', attendees:1 });
-  const [rsvpDone,         setRsvpDone]         = useState(false);
-  const [rsvpLoading,      setRsvpLoading]      = useState(false);
+  const events = [
+    { eventId:1, title:'Youth Conference 2026',    eventDate:'2026-05-15', eventTime:'09:00', category:'YOUTH',       location:'Main Church Hall, Pretoria',       description:'Annual youth gathering for spiritual growth and fellowship. Join us for a day of worship, learning and community building.',    currentAttendees:45, maxAttendees:100, rsvpDeadline:'2026-05-10', featured:true },
+    { eventId:2, title:'Community Outreach Day',   eventDate:'2026-05-22', eventTime:'08:00', category:'COMMUNITY',   location:'City Centre, Johannesburg',         description:'Join us as we serve our local community with love and care. Bring your family and friends for a day of impactful service.',      currentAttendees:30, maxAttendees:50,  rsvpDeadline:'2026-05-18', featured:false },
+    { eventId:3, title:'Annual Conference 2026',   eventDate:'2026-06-10', eventTime:'10:00', category:'CONFERENCE',  location:'Conference Centre, Cape Town',      description:'Our annual gathering of all AME Church YPD members from across the region. A landmark event in our calendar.',               currentAttendees:120, maxAttendees:200, rsvpDeadline:'2026-06-01', featured:true },
+    { eventId:4, title:'Sunday Worship Service',   eventDate:'2026-05-19', eventTime:'10:00', category:'WORSHIP',     location:'Main Sanctuary, Pretoria',          description:'Join us for our weekly worship service filled with praise and the Word of God.',                                              currentAttendees:80, maxAttendees:150, rsvpDeadline:null,         featured:false },
+    { eventId:5, title:'Bible Study Workshop',     eventDate:'2026-05-28', eventTime:'18:00', category:'EDUCATIONAL', location:'Fellowship Hall, Johannesburg',     description:'Deep dive into the scriptures with our experienced Bible study leaders. All levels welcome.',                               currentAttendees:25, maxAttendees:40,  rsvpDeadline:'2026-05-25', featured:false },
+    { eventId:6, title:'Youth Leadership Training',eventDate:'2026-06-05', eventTime:'09:00', category:'YOUTH',       location:'Training Centre, Pretoria',         description:'Equipping the next generation of leaders with the skills they need to serve effectively.',                                  currentAttendees:20, maxAttendees:30,  rsvpDeadline:'2026-06-01', featured:false },
+    { eventId:7, title:'Prayer Meeting',           eventDate:'2026-05-20', eventTime:'19:00', category:'WORSHIP',     location:'Chapel Room, Pretoria',             description:'Join us for an intimate evening of prayer and intercession for our community and nation.',                                  currentAttendees:35, maxAttendees:60,  rsvpDeadline:null,         featured:false },
+    { eventId:8, title:'Volunteer Day',            eventDate:'2026-06-15', eventTime:'07:00', category:'COMMUNITY',   location:'Various Locations, Gauteng',        description:'A day of coordinated community service across multiple locations. Sign up to make a difference.',                           currentAttendees:55, maxAttendees:100, rsvpDeadline:'2026-06-10', featured:false },
+    { eventId:9, title:'Youth Retreat 2026',       eventDate:'2026-07-04', eventTime:'08:00', category:'YOUTH',       location:'Retreat Centre, Magaliesburg',      description:'A weekend retreat for youth and young adults to rest, reflect and reconnect with God and each other.',                      currentAttendees:40, maxAttendees:60,  rsvpDeadline:'2026-06-25', featured:true },
+  ];
 
-  const { user } = useAuth();
-
-  useEffect(() => { window.scrollTo(0, 0); }, []);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const data = await eventService.getAll({ page: 0, size: 50 });
-        // Spring Boot returns { content: [...], totalPages, totalElements }
-        setEvents(data.content || data || []);
-      } catch (err) {
-        setError('Unable to load events. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
-  }, []);
-
-  const categories = ['ALL', 'YOUTH', 'COMMUNITY', 'CONFERENCE', 'WORSHIP', 'EDUCATIONAL'];
+  const categories = ['ALL','YOUTH','COMMUNITY','CONFERENCE','WORSHIP','EDUCATIONAL'];
 
   const CAT_STYLE = {
-    CONFERENCE:  { bg:'rgba(26,86,160,.1)',  text:'#1a56a0' },
-    YOUTH:       { bg:'rgba(107,33,168,.1)', text:'#6b21a8' },
-    COMMUNITY:   { bg:'rgba(26,102,64,.1)',  text:'#1a6640' },
-    WORSHIP:     { bg:'rgba(146,64,14,.1)',  text:'#92400e' },
-    EDUCATIONAL: { bg:'rgba(153,27,27,.1)',  text:'#991b1b' },
+    CONFERENCE:  { bg:'rgba(26,86,160,.1)',  text:'#ffffff' },
+    YOUTH:       { bg:'rgba(107,33,168,.1)', text:'#ffffff' },
+    COMMUNITY:   { bg:'rgba(26,102,64,.1)',  text:'#ffffff' },
+    WORSHIP:     { bg:'rgba(146,64,14,.1)',  text:'#ffffff' },
+    EDUCATIONAL: { bg:'rgba(153,27,27,.1)',  text:'#ffffff' },
   };
 
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const getDay   = d => new Date(d).getDate();
-  const getMonth = d => MONTHS[new Date(d).getMonth()].toUpperCase();
-  const formatDate = d => new Date(d).toLocaleDateString('en-ZA', { year:'numeric', month:'long', day:'numeric' });
-  const spotsLeft  = e => e.maxAttendees ? e.maxAttendees - (e.currentAttendees || 0) : null;
-  const capacity   = e => e.maxAttendees ? Math.round(((e.currentAttendees||0)/e.maxAttendees)*100) : 0;
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [view, setView] = useState('grid'); // 'grid' | 'list'
+  const [rsvpEvent, setRsvpEvent] = useState(null);
+  const [rsvpForm, setRsvpForm] = useState({ name:'', email:'', attendees:1 });
+  const [rsvpDone, setRsvpDone] = useState(false);
 
   const filtered = events.filter(e => selectedCategory === 'ALL' || e.category === selectedCategory);
+  const featured = events.filter(e => e.featured);
 
-  const handleRSVP = (ev) => { setRsvpEvent(ev); setRsvpDone(false); setRsvpForm({ name: user?.firstName || '', email: user?.email || '', attendees: 1 }); };
-
-  const submitRSVP = async (e) => {
-    e.preventDefault();
-    setRsvpLoading(true);
-    try {
-      await eventService.rsvp(rsvpEvent.eventId, {
-        guestName: rsvpForm.name,
-        guestEmail: rsvpForm.email,
-        attendanceCount: rsvpForm.attendees,
-        userId: user?.userId || null,
-      });
-      setRsvpDone(true);
-      // Refresh events to update attendee count
-      const data = await eventService.getAll({ page:0, size:50 });
-      setEvents(data.content || data || []);
-    } catch (err) {
-      alert(typeof err === 'string' ? err : 'RSVP failed. Please try again.');
-    } finally {
-      setRsvpLoading(false);
-    }
+  const formatDate = d => {
+    const dt = new Date(d);
+    return `${MONTH_NAMES[dt.getMonth()]} ${dt.getDate()}, ${dt.getFullYear()}`;
   };
-  
+  const getDay = d => new Date(d).getDate();
+  const getMonth = d => MONTH_NAMES[new Date(d).getMonth()].toUpperCase();
+
+  const capacity = e => Math.round((e.currentAttendees / e.maxAttendees) * 100);
+  const spotsLeft = e => e.maxAttendees - e.currentAttendees;
+
+  const handleRSVP = ev => { e2 => e2.stopPropagation(); setRsvpEvent(ev); setRsvpDone(false); setRsvpForm({ name:'',email:'',attendees:1 }); };
+  const submitRSVP = e => { e.preventDefault(); if(rsvpForm.name && rsvpForm.email) setRsvpDone(true); };
+
   return (
     <div style={{ fontFamily:"'Lato',sans-serif", paddingTop:64 }}>
       <style>{`
