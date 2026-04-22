@@ -21,7 +21,7 @@ const PageStyles = () => (
     .inner { max-width:1200px; margin:0 auto; }
     .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:48px; align-items:center; }
     .grid-3 { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:28px; }
-    .grid-4 { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:24px; }
+    .grid-4 { display:grid; grid-template-columns:repeat(auto-fill,minmax(191.6px,1fr)); gap:24px; }
     .card { background:#fff; border-radius:12px; border:1px solid rgba(0,0,0,.07); overflow:hidden; transition:all .3s; }
     .card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(26,71,49,.12); }
     .btn-gold { background:var(--gold); color:var(--gk); border:none; padding:13px 32px; border-radius:5px; font-family:'Lato',sans-serif; font-size:12px; font-weight:700; letter-spacing:.1em; cursor:pointer; text-decoration:none; display:inline-block; transition:background .2s; }
