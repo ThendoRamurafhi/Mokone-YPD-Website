@@ -1,31 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import chargeService from '../services/chargeService';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Link } from 'react-router-dom';
 
 const ChargesPage = () => {
-  const charges = [
-    { chargeId:1, chargeName:'Bethel AME Church',     area:'Pretoria North', city:'Pretoria',     pastor:'Rev. John Doe',     memberCount:250, phone:'+27 12 345 6789', email:'bethel@amechurch.co.za',     serviceTime:'Sun 10:00', status:'ACTIVE' },
-    { chargeId:2, chargeName:'Emmanuel AME Church',   area:'Johannesburg',   city:'Johannesburg', pastor:'Pastor Jane Smith',  memberCount:180, phone:'+27 11 234 5678', email:'emmanuel@amechurch.co.za',   serviceTime:'Sun 09:00', status:'ACTIVE' },
-    { chargeId:3, chargeName:'Grace AME Church',      area:'Cape Town',      city:'Cape Town',    pastor:'Rev. Michael Brown', memberCount:320, phone:'+27 21 345 6789', email:'grace@amechurch.co.za',       serviceTime:'Sun 10:30', status:'ACTIVE' },
-    { chargeId:4, chargeName:'Trinity AME Church',    area:'Durban',         city:'Durban',       pastor:'Pastor Sarah Johnson',memberCount:210, phone:'+27 31 456 7890', email:'trinity@amechurch.co.za',     serviceTime:'Sun 10:00', status:'ACTIVE' },
-    { chargeId:5, chargeName:'Zion AME Church',       area:'Pretoria South', city:'Pretoria',     pastor:'Rev. David Wilson',  memberCount:150, phone:'+27 12 456 7890', email:'zion@amechurch.co.za',        serviceTime:'Sun 08:00', status:'ACTIVE' },
-    { chargeId:6, chargeName:'Mount Olive AME Church',area:'Johannesburg',   city:'Johannesburg', pastor:'Pastor Mary Thompson',memberCount:290, phone:'+27 11 567 8901', email:'mountolive@amechurch.co.za',  serviceTime:'Sun 11:00', status:'ACTIVE' },
-    { chargeId:7, chargeName:'Calvary AME Church',    area:'Polokwane',      city:'Polokwane',    pastor:'Rev. Samuel Mashego',memberCount:140, phone:'+27 15 234 5678', email:'calvary@amechurch.co.za',     serviceTime:'Sun 09:30', status:'ACTIVE' },
-    { chargeId:8, chargeName:'Hope AME Church',       area:'Nelspruit',      city:'Nelspruit',    pastor:'Pastor Faith Dlamini',memberCount:195, phone:'+27 13 345 6789', email:'hope@amechurch.co.za',        serviceTime:'Sun 10:00', status:'ACTIVE' },
-    { chargeId:9, chargeName:'New Life AME Church',   area:'Cape Town',      city:'Cape Town',    pastor:'Rev. Peter Botha',  memberCount:170, phone:'+27 21 456 7890', email:'newlife@amechurch.co.za',      serviceTime:'Sun 09:00', status:'ACTIVE' },
-  ];
+  const [charges,          setCharges]          = useState([]);
+  const [loading,          setLoading]          = useState(true);
+  const [error,            setError]            = useState(null);
+  const [selectedArea,     setSelectedArea]     = useState('ALL');
+  const [searchTerm,       setSearchTerm]       = useState('');
+  const [selected,         setSelected]         = useState(null);
+  const [selectedService, setSelectedService] = useState('ALL');
+  const [savedSearch,     setSavedSearch]     = useState(false);
 
-  const areas = ['ALL', 'Pretoria North', 'Pretoria South', 'Johannesburg', 'Cape Town', 'Durban', 'Polokwane', 'Nelspruit'];
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        setLoading(true);
+        const data = await chargeService.getAll({ page:0, size:100 });
+        setCharges(data.content || data || []);
+      } catch {
+        setError('Unable to load churches. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
+
+  // Build area list dynamically from data
+  const areas = ['ALL', ...new Set(charges.map(c => c.area || c.district || c.region).filter(Boolean))];
   const serviceTypes = ['ALL', 'Sunday Morning', 'Sunday Evening', 'Midweek'];
 
-  const [selectedArea, setSelectedArea] = useState('ALL');
-  const [searchTerm, setSearchTerm]   = useState('');
-  const [selectedService, setSelectedService] = useState('ALL');
-  const [savedSearch, setSavedSearch] = useState(false);
-  const [selected, setSelected]       = useState(null);
-
   const filtered = charges.filter(c => {
-    const matchArea    = selectedArea === 'ALL' || c.area === selectedArea;
-    const matchSearch  = !searchTerm || c.chargeName.toLowerCase().includes(searchTerm.toLowerCase()) || c.city.toLowerCase().includes(searchTerm.toLowerCase()) || c.pastor.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchArea   = selectedArea === 'ALL' || (c.area||c.district||c.region) === selectedArea;
+    const matchSearch = !searchTerm || c.chargeName.toLowerCase().includes(searchTerm.toLowerCase()) || (c.city||'').toLowerCase().includes(searchTerm.toLowerCase()) || (c.pastorName||'').toLowerCase().includes(searchTerm.toLowerCase());
     return matchArea && matchSearch;
   });
 
@@ -50,14 +61,20 @@ const ChargesPage = () => {
           Use the filters below to quickly locate an AME congregation in your area.
         </p>
         {/* Stats */}
-        <div style={{ display:'inline-flex', gap:0, background:'rgba(255,255,255,.06)', border:'1px solid rgba(201,168,76,.2)', borderRadius:10, padding:'4px' }}>
-          {[['9','Churches'],['7','Areas'],['1755+','Members']].map(([v,l],i) => (
-            <div key={i} style={{ padding:'14px 28px', borderRight: i<2 ? '1px solid rgba(201,168,76,.15)':'' }}>
-              <div style={{ fontFamily:'Georgia,serif', fontSize:26, fontWeight:700, color:'#c9a84c', lineHeight:1 }}>{v}</div>
-              <div style={{ fontSize:11, color:'rgba(255,255,255,.45)', letterSpacing:'.1em', marginTop:3 }}>{l}</div>
-            </div>
-          ))}
-        </div>
+        {!loading && !error && (
+          <div style={{ display:'inline-flex', gap:0, background:'rgba(255,255,255,.06)', border:'1px solid rgba(201,168,76,.2)', borderRadius:10, padding:'4px', marginTop:28 }}>
+            {[
+              [charges.length, 'Churches'],
+              [(areas.length - 1), 'Areas'],
+              [charges.reduce((s, c) => s + (c.memberCount || 0), 0) + '+', 'Members']
+            ].map(([v, l], i) => (
+              <div key={i} style={{ padding:'14px 28px', borderRight: i<2 ? '1px solid rgba(201,168,76,.15)':'' }}>
+                <div style={{ fontFamily:'Georgia,serif', fontSize:26, fontWeight:700, color:'#c9a84c', lineHeight:1 }}>{v}</div>
+                <div style={{ fontSize:11, color:'rgba(255,255,255,.45)', letterSpacing:'.1em', marginTop:3 }}>{l}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── FILTER PANEL (Wix style) ── */}
