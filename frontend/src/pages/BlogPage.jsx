@@ -1,42 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import blogService from '../services/blogService';
 import BlogCard from '../components/blog/BlogCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const BlogPage = () => {
-  const posts = [
-    { postId:1, title:'Walking in Faith During Difficult Times',    excerpt:'Discover how to maintain your faith when life gets challenging and how our community can support you through it all.',   category:'SERMON',       publishedAt:'2026-03-15', authorName:'Rev. John Doe',        viewCount:245, readTime:'5 min' },
-    { postId:2, title:'Youth Leadership Program Launch',             excerpt:'We are excited to announce our new youth leadership program designed to equip the next generation of church leaders.',    category:'ANNOUNCEMENT', publishedAt:'2026-03-10', authorName:'Pastor Jane Smith',    viewCount:189, readTime:'3 min' },
-    { postId:3, title:'Community Service Report 2026',               excerpt:'Read about all the amazing work our members did this year serving our local communities with love and dedication.',        category:'NEWS',         publishedAt:'2026-03-05', authorName:'Deacon Michael Brown', viewCount:312, readTime:'6 min' },
-    { postId:4, title:"My Testimony of God's Grace",                 excerpt:'A personal story of how God transformed my life through the AME Church YPD community and the power of prayer.',          category:'TESTIMONY',    publishedAt:'2026-02-28', authorName:'Sister Sarah Johnson', viewCount:428, readTime:'7 min' },
-    { postId:5, title:'Bible Study Resources for Youth',             excerpt:'A collection of helpful resources, study guides and devotionals specially curated for young believers in our conference.', category:'RESOURCE',     publishedAt:'2026-02-20', authorName:'Pastor Jane Smith',    viewCount:156, readTime:'4 min' },
-    { postId:6, title:'The Power of Community Prayer',               excerpt:'Exploring how praying together as a community strengthens our faith and brings us closer to God and each other.',        category:'SERMON',       publishedAt:'2026-02-15', authorName:'Rev. John Doe',        viewCount:267, readTime:'5 min' },
-  ];
+  const [posts,            setPosts]            = useState([]);
+  const [loading,          setLoading]          = useState(true);
+  const [error,            setError]            = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [searchTerm,       setSearchTerm]       = useState('');
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        setLoading(true);
+        const data = await blogService.getAll({ page:0, size:50 });
+        setPosts(data.content || data || []);
+      } catch {
+        setError('Unable to load posts. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
 
   const categories = ['ALL','SERMON','ANNOUNCEMENT','TESTIMONY','NEWS','RESOURCE'];
-
-  const CAT_STYLE = {
-    SERMON:       { bg:'rgba(26,71,49,.1)',  text:'#1a4731' },
-    ANNOUNCEMENT: { bg:'rgba(201,168,76,.15)',text:'#7d5b00' },
-    TESTIMONY:    { bg:'rgba(180,60,60,.08)',text:'#8a2020' },
-    NEWS:         { bg:'rgba(30,80,140,.08)',text:'#1e508c' },
-    RESOURCE:     { bg:'rgba(60,60,180,.08)',text:'#3c3cb4' },
-  };
-
-  const ACCENT = { SERMON:'#1a4731', ANNOUNCEMENT:'#c9a84c', TESTIMONY:'#7a2020', NEWS:'#1e508c', RESOURCE:'#3c3cb4' };
-
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
+  const CAT_STYLE  = { SERMON:{bg:'rgba(37,96,64,.1)',text:'#256040'}, ANNOUNCEMENT:{bg:'rgba(201,168,76,.15)',text:'#7d5b00'}, TESTIMONY:{bg:'rgba(180,60,60,.08)',text:'#8a2020'}, NEWS:{bg:'rgba(30,80,140,.08)',text:'#1e508c'}, RESOURCE:{bg:'rgba(60,60,180,.08)',text:'#3c3cb4'} };
+  const ACCENT     = { SERMON:'#1a4731', ANNOUNCEMENT:'#c9a84c', TESTIMONY:'#7a2020', NEWS:'#1e508c', RESOURCE:'#3c3cb4' };
 
   const filtered = posts.filter(p => {
-    const matchCat = selectedCategory === 'ALL' || p.category === selectedCategory;
-    const matchSearch = !searchTerm || p.title.toLowerCase().includes(searchTerm.toLowerCase()) || p.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCat    = selectedCategory === 'ALL' || p.category === selectedCategory;
+    const matchSearch = !searchTerm || p.title.toLowerCase().includes(searchTerm.toLowerCase()) || (p.excerpt||'').toLowerCase().includes(searchTerm.toLowerCase());
     return matchCat && matchSearch;
   });
 
   const formatDate = d => new Date(d).toLocaleDateString('en-ZA', { year:'numeric', month:'long', day:'numeric' });
 
-  const featured = posts[0];
+  const featured = posts[0] || null;
 
   return (
     <div style={{ fontFamily:"'Lato',sans-serif", paddingTop:64 }}>
@@ -57,6 +61,7 @@ const BlogPage = () => {
       </div>
 
       {/* FEATURED POST */}
+      {featured && (
       <section style={{ background:'#f7f9f7', padding:'60px 24px' }}>
         <div style={{ maxWidth:1200, margin:'0 auto' }}>
           <span style={{ fontFamily:'Lato,sans-serif', fontSize:10, fontWeight:700, letterSpacing:'.22em', color:'#c9a84c', display:'block', marginBottom:20 }}>FEATURED</span>
@@ -88,6 +93,7 @@ const BlogPage = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* FILTER + GRID */}
       <section style={{ background:'#fff', padding:'0 24px 80px' }}>
@@ -109,7 +115,9 @@ const BlogPage = () => {
             Showing <strong style={{ color:'#0d2b1a' }}>{filtered.length}</strong> post{filtered.length!==1?'s':''}
           </p>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <LoadingSpinner />
+          ) : filtered.length === 0 ? (
             <div style={{ textAlign:'center', padding:'80px 0' }}>
               <div style={{ fontSize:48, color:'#c9a84c', marginBottom:14 }}>📖</div>
               <h3 style={{ fontFamily:'Georgia,serif', fontSize:22, color:'#0d2b1a', marginBottom:10 }}>No posts found</h3>
@@ -117,7 +125,7 @@ const BlogPage = () => {
             </div>
           ) : (
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))', gap:28 }}>
-              {filtered.map((post,i) => (
+              {filtered.map((post, i) => (
                 <article key={post.postId} className="blog-card">
                   <div style={{ height:5, background:ACCENT[post.category]||'#1a4731' }} />
                   <div style={{ height:160, background:i%3===0?'linear-gradient(135deg,#1a4731,#40916c)':i%3===1?'linear-gradient(135deg,#7d5b00,#c9a84c)':'linear-gradient(135deg,#256040,#3a7d56)', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -144,10 +152,11 @@ const BlogPage = () => {
                 </article>
               ))}
             </div>
-          )}
+            )}
         </div>
       </section>
     </div>
   );
 };
+
 export default BlogPage;
