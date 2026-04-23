@@ -38,11 +38,11 @@ const EventsPage = () => {
   const categories = ['ALL', 'YOUTH', 'COMMUNITY', 'CONFERENCE', 'WORSHIP', 'EDUCATIONAL'];
 
   const CAT_STYLE = {
-    CONFERENCE:  { bg:'rgba(26,86,160,.1)',  text:'#1a56a0' },
-    YOUTH:       { bg:'rgba(107,33,168,.1)', text:'#6b21a8' },
-    COMMUNITY:   { bg:'rgba(26,102,64,.1)',  text:'#1a6640' },
-    WORSHIP:     { bg:'rgba(146,64,14,.1)',  text:'#92400e' },
-    EDUCATIONAL: { bg:'rgba(153,27,27,.1)',  text:'#991b1b' },
+    CONFERENCE:  { bg:'rgba(26,86,160,.1)',  text:'#ffffff' },
+    YOUTH:       { bg:'rgba(107,33,168,.1)', text:'#ffffff' },
+    COMMUNITY:   { bg:'rgba(26,102,64,.1)',  text:'#ffffff' },
+    WORSHIP:     { bg:'rgba(146,64,14,.1)',  text:'#ffffff' },
+    EDUCATIONAL: { bg:'rgba(153,27,27,.1)',  text:'#ffffff' },
   };
 
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
