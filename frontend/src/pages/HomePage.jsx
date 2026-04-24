@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { NavIcons } from '../components/common/NavIcons';
 import YPDLogo from '../components/common/YPDLogo';
+import eventService from '../services/eventService';
+import blogService from '../services/blogService';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const HomePage = () => {
 
@@ -9,29 +12,11 @@ const HomePage = () => {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   /* ── data ── */
-  const upcomingEvents = [
-    { eventId:1, title:'Youth Conference 2026',  eventDate:'2026-05-15', category:'YOUTH',     location:'Main Church Hall', description:'Annual youth gathering for spiritual growth and fellowship.' },
-    { eventId:2, title:'Community Outreach Day', eventDate:'2026-05-22', category:'COMMUNITY', location:'City Centre',      description:'Join us as we serve our local community with love and care.' },
-    { eventId:3, title:'Annual Conference',       eventDate:'2026-06-10', category:'CONFERENCE',location:'Conference Centre',description:'Our annual gathering of all AME Church YPD members.' },
-  ];
-
-  const latestPosts = [
-    { id:1, category:'SERMON',       title:'Walking in Faith During Difficult Times',  excerpt:'Discover how to maintain your faith when life gets challenging — and how our community supports you.', author:'Rev. John Doe',        date:'Mar 15, 2026', read:'5 min' },
-    { id:2, category:'ANNOUNCEMENT', title:'Youth Leadership Program Now Open',         excerpt:'Equipping the next generation of church leaders. Applications are now open for our 2026 cohort.',       author:'Pastor Jane Smith',    date:'Mar 10, 2026', read:'3 min' },
-    { id:3, category:'NEWS',          title:"My Testimony of God's Grace",               excerpt:'A personal story of transformation through the AME Church YPD community and the power of prayer.',      author:'Sister Sarah Johnson', date:'Feb 28, 2026', read:'7 min' },
-  ];
-
   const TESTIMONIALS = [
     { name:'Ledile Kgopong',         role:'Church Member',              avatar:'LK',  quote:"A welcoming community that truly feels like family. I've never felt so at home in a church before." },
     { name:'Neo Mannya',             role:'YPD Conference President',   avatar:'NM',  quote:'Exceptional sermons that challenge my faith in the most beautiful way. Deeply transformative.' },
     { name:'Thendo Ramurafhi',       role:'New Member',                 avatar:'TR',  quote:"I've found my spiritual home here. The YPD has helped me grow in ways I never imagined possible." },
     { name:'Rev. MA Monyemorathwe', role:'Sibasa Circuit Local Pastor', avatar:'MAM', quote:'An inspiring experience every single time I attend. The spirit of this community is extraordinary.' },
-  ];
-
-  const recentUpdates = [
-    { id:1, title:'Community Outreach Event', excerpt:'Join us for our monthly community service initiative...', timeAgo:'2 days ago' },
-    { id:2, title:'Youth Prayer Night',        excerpt:'A powerful evening of worship and intercession together.', timeAgo:'4 days ago' },
-    { id:3, title:'Annual Conference Update',  excerpt:'Registrations are now open for the 2026 conference.', timeAgo:'1 week ago' },
   ];
 
   const categoryColors = {
@@ -46,20 +31,6 @@ const HomePage = () => {
     NEWS:         { bg:'rgba(30,80,140,0.08)',  color:'#1e508c' },
     RESOURCE:     { bg:'rgba(60,60,180,0.08)',  color:'#3c3cb4' },
   };
-
-  // ─────────────────────────────────────────────────────────────────
-  // TILES — all eight, each using <Link to="..."> → proper routing
-  // ─────────────────────────────────────────────────────────────────
-  const TILES = [
-    { label:'Events',        to:'/events',    Icon: NavIcons.Events        },
-    { label:'Contact',       to:'/contact',   Icon: NavIcons.Contact       },
-    { label:'Media',         to:'/media',     Icon: NavIcons.Media         },
-    { label:'Blog',          to:'/blog',      Icon: NavIcons.Blog          },
-    { label:'Church Finder', to:'/charges',   Icon: NavIcons.ChurchFinder  },
-    { label:'Structure',     to:'/structure', Icon: NavIcons.Structure     },
-    { label:'About',         to:'/about',     Icon: NavIcons.About         },
-    { label:'Login',         to:'/login',     Icon: NavIcons.Login         },
-  ];
 
   /* ── state ── */
   const [playing,           setPlaying]           = useState(false);
@@ -79,8 +50,77 @@ const HomePage = () => {
   const tHoverOn  = e => { e.currentTarget.style.borderColor = '#c9a84c'; e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 20px 48px rgba(26,71,49,0.12)'; };
   const tHoverOff = e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.15)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; };
 
+  // New API states
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [latestPosts,    setLatestPosts]    = useState([]);
+  const [featuredSermon, setFeaturedSermon] = useState(null);
+  const [updates,        setUpdates]        = useState([]);
+  const [loading,        setLoading]        = useState(true);
+  const [error,          setError]          = useState(null);
+
+  // New date formatter
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-ZA', { year:'numeric', month:'long', day:'numeric' });
+  };
+
+  // File 1 used capital keys: NavIcons.Events
+  // File 2 uses lowercase keys: NavIcons.events
+  // Match whatever your actual NavIcons export uses — check your NavIcons.js file
+  // If NavIcons.Events works, keep File 1's version. Just make sure it's consistent.
+
+  const TILES = [
+    { label:'Events',        to:'/events',    Icon: NavIcons.Events        },
+    { label:'Contact',       to:'/contact',   Icon: NavIcons.Contact       },
+    { label:'Media',         to:'/media',     Icon: NavIcons.Media         },
+    { label:'Blog',          to:'/blog',      Icon: NavIcons.Blog          },
+    { label:'Church Finder', to:'/charges',   Icon: NavIcons.ChurchFinder  },
+    { label:'Structure',     to:'/structure', Icon: NavIcons.Structure     },
+    { label:'About',         to:'/about',     Icon: NavIcons.About         },
+    { label:'Login',         to:'/login',     Icon: NavIcons.Login         },
+  ];
+
+  // The async data fetcher
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        setLoading(true);
+        const eventsResponse = await eventService.getAllEvents({ page: 0, size: 3 });
+        setUpcomingEvents(eventsResponse.content || []);
+
+        const blogResponse = await blogService.getAllPosts({ page: 0, size: 3 });
+        setLatestPosts(blogResponse.content || []);
+
+        const sermonResponse = await blogService.getAllPosts({ category: 'SERMON', page: 0, size: 1 });
+        if (sermonResponse.content && sermonResponse.content.length > 0) {
+          setFeaturedSermon(sermonResponse.content[0]);
+        }
+
+        const updatesResponse = await blogService.getAllPosts({ category: 'ANNOUNCEMENT', page: 0, size: 4 });
+        setUpdates(updatesResponse.content || []);
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching home data:', err);
+        setError('Failed to load content. Please try again later.');
+        setLoading(false);
+      }
+    };
+    fetchHomeData();
+  }, []);
+
   return (
     <div style={{ fontFamily:"'Lato',sans-serif" }}>
+      {loading && (
+        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(255,255,255,0.8)', zIndex:999, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <LoadingSpinner />
+        </div>
+      )}
+      {error && (
+        <div style={{ background:'#fee', color:'#c00', padding:'12px 24px', textAlign:'center' }}>
+          {error} <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════
           HERO
@@ -272,7 +312,7 @@ const HomePage = () => {
               <div>
                 <h3 style={{ fontFamily:'Georgia,serif', fontSize:17, fontWeight:600, color:'#0d2b1a', marginBottom:14 }}>Recent Updates</h3>
                 <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                  {recentUpdates.map(item => (
+                  {updates.map(item => (
                     <div key={item.id} style={{ background:'#fff', border:'1px solid rgba(0,0,0,0.07)', borderRadius:10, padding:'14px 16px', display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
                       <div>
                         <div style={{ fontSize:13, fontWeight:600, color:'#0d2b1a', marginBottom:4 }}>{item.title}</div>
@@ -354,7 +394,7 @@ const HomePage = () => {
 
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))', gap:28 }}>
             {latestPosts.map((post,i)=>(
-              <article key={post.id} className="blog-card">
+              <article key={post.postId} className="blog-card">
                 <div style={{ height:5, background:i===0?'var(--green-dark)':i===1?'var(--gold)':'var(--green-soft)' }} />
                 <div style={{ height:180, background:i===0?'linear-gradient(135deg,#1a4731,#3a7d56)':i===1?'linear-gradient(135deg,#2d4a10,#5a8c1a)':'linear-gradient(135deg,#1a2a40,#2a4060)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                   <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:48, color:'rgba(255,255,255,0.15)', fontStyle:'italic' }}>
@@ -366,12 +406,16 @@ const HomePage = () => {
                     <span style={{ fontSize:10, fontFamily:"'Lato',sans-serif", fontWeight:700, letterSpacing:'0.16em', padding:'4px 10px', borderRadius:2, background:categoryColors[post.category]?.bg, color:categoryColors[post.category]?.color||categoryColors[post.category]?.text }}>
                       {post.category}
                     </span>
-                    <span style={{ fontSize:12, color:'var(--text-light)', fontFamily:"'Lato',sans-serif" }}>{post.read} read</span>
+                    <span style={{ fontSize:12, color:'var(--text-light)', fontFamily:"'Lato',sans-serif" }}>
+                      {post.readTime ? `${post.readTime} min` : ''}
+                    </span>
                   </div>
                   <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:600, color:'var(--text-dark)', lineHeight:1.3, marginBottom:10 }}>{post.title}</h3>
                   <p style={{ fontFamily:"'Lato',sans-serif", fontSize:13, color:'var(--text-light)', lineHeight:1.75, marginBottom:20 }}>{post.excerpt}</p>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderTop:'1px solid rgba(0,0,0,0.06)', paddingTop:16 }}>
-                    <span style={{ fontSize:12, color:'var(--text-mid)', fontFamily:"'Lato',sans-serif" }}><strong>{post.author}</strong> · {post.date}</span>
+                    <span style={{ fontSize:12, color:'var(--text-mid)', fontFamily:"'Lato',sans-serif" }}>
+                      {post.publishedAt ? formatDate(post.publishedAt) : ''}
+                    </span>
                     <Link to="/blog" style={{ color:'var(--green-mid)', textDecoration:'none', fontSize:13, fontFamily:"'Lato',sans-serif", display:'flex', alignItems:'center', gap:4, fontWeight:700 }}>
                       Read <NavIcons.Arrow />
                     </Link>
