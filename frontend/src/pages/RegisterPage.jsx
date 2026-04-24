@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
 import { useAuth } from '../hooks/useAuth';
-import authService from '../services/authService';
 import YPDLogo from '../components/common/YPDLogo';
 
 const RegisterPage = () => {
@@ -40,7 +38,11 @@ const RegisterPage = () => {
 
   return (
     <div style={{ fontFamily:"'Lato',sans-serif", minHeight:'100vh', background:'linear-gradient(150deg,#071812,#0d2b1a 60%,#1a4731)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px', paddingTop:88 }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lato:wght@300;400;700&display=swap');`}</style>
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lato:wght@300;400;700&display=swap');
+      .li { width:100%; padding:13px 16px; border:1.5px solid rgba(26,71,49,0.2); border-radius:8px; font-size:14px; outline:none; font-family:'Lato',sans-serif; box-sizing:border-box; transition:border-color .2s; }
+      .li:focus { border-color:#1a4731; }
+    `}</style>
       <div style={{ width:'100%', maxWidth:480 }}>
         {/* Logo */}
         <div style={{ textAlign:'center', marginBottom:36 }}>
@@ -78,12 +80,12 @@ const RegisterPage = () => {
           <div style={{ textAlign:'center', marginTop:20, borderTop:'1px solid rgba(0,0,0,.07)', paddingTop:18 }}>
             <p style={{ fontSize:14, color:'#6b8070' }}>
               Already have an account?{' '}
-              <a href="/login" style={{ color:'#1a4731', fontWeight:700, textDecoration:'none' }}>Sign in here</a>
+              <Link to="/login" style={{ color:'#1a4731', fontWeight:700, textDecoration:'none' }}>Sign in here</Link>
             </p>
           </div>
         </div>
         <div style={{ textAlign:'center', marginTop:18 }}>
-          <a href="/" style={{ fontSize:13, color:'rgba(255,255,255,.35)', textDecoration:'none' }}>Continue as Guest →</a>
+          <Link to="/" style={{ fontSize:13, color:'rgba(255,255,255,.35)', textDecoration:'none' }}>Continue as Guest →</Link>
         </div>
       </div>
     </div>
