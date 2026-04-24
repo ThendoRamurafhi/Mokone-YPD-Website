@@ -90,7 +90,7 @@ const ContactPage = () => {
               <form onSubmit={handleSubmit}>
                 <h3 style={{ fontFamily:'Georgia,serif', fontSize:22, color:'#0d2b1a', marginBottom:24 }}>Contact Us</h3>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
-                  {[['firstName','First name','John'],['lastName','Last name','Doe']].map(([k,l,ph]) => (
+                  {[['firstName','First name','Thendo'],['lastName','Last name','Ramurafhi']].map(([k,l,ph]) => (
                     <div key={k}>
                       <label style={{ display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'#3d5247', marginBottom:7 }}>{l.toUpperCase()}</label>
                       <input placeholder={ph} value={formData[k]} onChange={e=>setFormData({...formData,[k]:e.target.value})}
@@ -98,7 +98,7 @@ const ContactPage = () => {
                     </div>
                   ))}
                 </div>
-                {[['email','Email *','john@example.com','email'],['phone','Phone','+ 27 12 345 6789','tel']].map(([k,l,ph,t]) => (
+                {[['email','Email *','thendo@example.com','email'],['phone','Phone','+ 27 12 345 6789','tel']].map(([k,l,ph,t]) => (
                   <div key={k} style={{ marginBottom:14 }}>
                     <label style={{ display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'#3d5247', marginBottom:7 }}>{l.toUpperCase()}</label>
                     <input type={t} required={k==='email'} placeholder={ph} value={formData[k]} onChange={e=>setFormData({...formData,[k]:e.target.value})}

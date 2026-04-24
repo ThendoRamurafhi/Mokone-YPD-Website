@@ -97,7 +97,7 @@ const LoginPage = () => {
                 type="email"
                 value={email} onChange={e=>setEmail(e.target.value)}
                 className="login-input"
-                placeholder="john@example.com"
+                placeholder="thendo@example.com"
               />
             </div>
 

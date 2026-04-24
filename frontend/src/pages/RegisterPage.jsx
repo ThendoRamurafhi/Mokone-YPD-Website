@@ -62,11 +62,11 @@ const RegisterPage = () => {
           <form onSubmit={handleSubmit}>
             {/* Name row */}
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:0 }}>
-              {field('firstName','First Name *','John','text',true)}
-              {field('lastName','Last Name *','Doe','text',true)}
+              {field('firstName','First Name *','Thendo','text',true)}
+              {field('lastName','Last Name *','Ramurafhi','text',true)}
             </div>
-            {field('username','Username *','johndoe123','text',true)}
-            {field('email','Email Address *','john@example.com','email',true)}
+            {field('username','Username *','thendo123','text',true)}
+            {field('email','Email Address *','thendo@example.com','email',true)}
             {field('phone','Phone Number','+ 27 12 345 6789','tel',false)}
             {field('password','Password *','••••••••','password',true)}
             {field('confirmPassword','Confirm Password *','••••••••','password',true)}
