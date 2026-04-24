@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../hooks/useAuth';
 import authService from '../services/authService';
@@ -88,21 +88,17 @@ const LoginPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit}>
 
             {/* Email */}
             <div style={{ marginBottom: 18 }}>
               <label className="login-label">EMAIL ADDRESS *</label>
               <input
                 type="email"
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Invalid email address' },
-                })}
+                value={email} onChange={e=>setEmail(e.target.value)}
                 className="login-input"
                 placeholder="john@example.com"
               />
-              {errors.email && <p style={{ color: '#c0392b', fontSize: 12, marginTop: 5 }}>{errors.email.message}</p>}
             </div>
 
             {/* Password */}
@@ -110,14 +106,10 @@ const LoginPage = () => {
               <label className="login-label">PASSWORD *</label>
               <input
                 type="password"
-                {...register('password', {
-                  required: 'Password is required',
-                  minLength: { value: 8, message: 'Password must be at least 8 characters' },
-                })}
+                value={password} onChange={e=>setPassword(e.target.value)}
                 className="login-input"
                 placeholder="••••••••"
               />
-              {errors.password && <p style={{ color: '#c0392b', fontSize: 12, marginTop: 5 }}>{errors.password.message}</p>}
             </div>
 
             {/* Forgot password */}
