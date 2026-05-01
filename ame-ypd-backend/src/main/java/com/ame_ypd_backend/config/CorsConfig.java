@@ -21,7 +21,9 @@ public class CorsConfig {
         // Allow requests from React development server
         config.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
-            "http://127.0.0.1:3000"
+            "http://localhost:5173",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5173"
         ));
         
         // Allow all HTTP methods
