@@ -31,11 +31,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(org.springframework.security.config.Customizer.withDefaults())  // ADD THIS LINE
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-
-                // ── Fully Public — no login needed ──────────────────
                 .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
@@ -44,48 +43,39 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/prayers/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/media/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
-
-                // ── Requires login (MEMBER or ADMIN) ────────────────
                 .requestMatchers(HttpMethod.POST, "/events/*/rsvp/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/events/rsvp/*/cancel").authenticated()
                 .requestMatchers(HttpMethod.POST, "/prayers/*/pray").authenticated()
-
-                // ── ADMIN only ───────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/events/**").hasRole("ADMIN")
-
                 .requestMatchers(HttpMethod.POST, "/blog/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/blog/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/blog/**").hasRole("ADMIN")
-
                 .requestMatchers(HttpMethod.POST, "/charges/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/charges/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/charges/**").hasRole("ADMIN")
-
                 .requestMatchers(HttpMethod.POST, "/media/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/media/**").hasRole("ADMIN")
-
                 .requestMatchers(HttpMethod.GET, "/prayers/pending").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/approve").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/reject").hasRole("ADMIN")
-
                 .requestMatchers(HttpMethod.POST, "/auth/create-admin").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/auth/promote/**").hasRole("ADMIN")
-                // Everything else requires at least being logged in
                 .anyRequest().authenticated()
             )
-        
-            .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class)
-            .addFilterBefore(jwtAuthenticationFilter, 
-                UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class);
+
+            // Allow H2 console frames
+            http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Industry standard password hashing
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
