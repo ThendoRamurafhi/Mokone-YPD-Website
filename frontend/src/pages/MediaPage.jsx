@@ -25,6 +25,7 @@ const MediaPage = () => {
   const videos = mediaItems.filter(m=>m.type==='VIDEO');
   const audios = mediaItems.filter(m=>m.type==='AUDIO');
   const current = activeTab==='PHOTOS'?photos:activeTab==='VIDEOS'?videos:audios;
+  const YT_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
   return (
     <div style={{ fontFamily:"'Lato',sans-serif", paddingTop:64 }}>
