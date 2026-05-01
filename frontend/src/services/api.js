@@ -1,27 +1,29 @@
+// FILE: src/services/api.js
+// This is the ONLY file that creates the axios instance.
+// Every other service imports THIS — never raw axios directly.
+//
+// .env (development):   REACT_APP_API_URL=http://localhost:8080/api/v1
+// .env.production:      REACT_APP_API_URL=https://api.yourdomain.com/api/v1
+
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
 });
 
-// Automatically add JWT token to every request
+// Attach JWT token to every request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Handle errors automatically
+// Handle 401 globally — auto logout
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
