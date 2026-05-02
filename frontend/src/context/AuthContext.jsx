@@ -17,14 +17,27 @@ export const AuthProvider = ({ children }) => {
   // ── login: calls POST /api/v1/auth/login ──────────────────────────────────
   const login = useCallback(async (email, password) => {
     const response = await authService.login(email, password);
-    setUser(response.user);
-    return response;
+    // Backend returns flat structure — build user object from top-level fields
+    const user = {
+      userId: response.userId,
+      username: response.username,
+      email: response.email,
+      role: response.role,
+    };
+    setUser(user);
+    return response; // return full response so LoginPage can read the role
   }, []);
 
   // ── register: calls POST /api/v1/auth/register ───────────────────────────
   const register = useCallback(async (userData) => {
     const response = await authService.register(userData);
-    setUser(response.user);
+    const user = {
+      userId: response.userId,
+      username: response.username,
+      email: response.email,
+      role: response.role,
+    };
+    setUser(user);
     return response;
   }, []);
 
