@@ -85,18 +85,18 @@ const HomePage = () => {
     const fetchHomeData = async () => {
       try {
         setLoading(true);
-        const eventsResponse = await eventService.getAllEvents({ page: 0, size: 3 });
+        const eventsResponse = await eventService.getAll({ page: 0, size: 3 });
         setUpcomingEvents(eventsResponse.content || []);
 
-        const blogResponse = await blogService.getAllPosts({ page: 0, size: 3 });
+        const blogResponse = await blogService.getAll({ page: 0, size: 3 });
         setLatestPosts(blogResponse.content || []);
 
-        const sermonResponse = await blogService.getAllPosts({ category: 'SERMON', page: 0, size: 1 });
+        const sermonResponse = await blogService.getAll({ category: 'SERMON', page: 0, size: 1 });
         if (sermonResponse.content && sermonResponse.content.length > 0) {
           setFeaturedSermon(sermonResponse.content[0]);
         }
 
-        const updatesResponse = await blogService.getAllPosts({ category: 'ANNOUNCEMENT', page: 0, size: 4 });
+        const updatesResponse = await blogService.getAll({ category: 'ANNOUNCEMENT', page: 0, size: 4 });
         setUpdates(updatesResponse.content || []);
 
         setLoading(false);
