@@ -4,10 +4,18 @@ const authService = {
 
   // POST /api/v1/auth/register
   register: async ({ username, email, password, firstName, lastName, phone }) => {
-    const response = await api.post('/auth/register', { username, email, password, firstName, lastName, phone });
+    const response = await api.post('/auth/register', {
+      username, email, password, firstName, lastName, phone
+    });
     if (response.token) {
       localStorage.setItem('authToken', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user || { userId: response.userId, email, username }));
+      const user = {
+        userId: response.userId,
+        username: response.username,
+        email: response.email,
+        role: response.role,
+      };
+      localStorage.setItem('user', JSON.stringify(user));
     }
     return response;
   },
@@ -17,7 +25,15 @@ const authService = {
     const response = await api.post('/auth/login', { email, password });
     if (response.token) {
       localStorage.setItem('authToken', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // Backend returns flat structure, not nested user object
+      // Build the user object from the top-level fields
+      const user = {
+        userId: response.userId,
+        username: response.username,
+        email: response.email,
+        role: response.role,
+      };
+      localStorage.setItem('user', JSON.stringify(user));
     }
     return response;
   },
