@@ -29,8 +29,8 @@ public class BlogController {
     }
 
     // GET /api/v1/blog
-    @GetMapping
-    public ResponseEntity<List<BlogPostResponseDTO>> getPublishedPosts() {
+    @GetMapping({"", "/posts"})
+        public ResponseEntity<List<BlogPostResponseDTO>> getPublishedPosts() {
         return ResponseEntity.ok(blogPostService.getPublishedPosts());
     }
 
