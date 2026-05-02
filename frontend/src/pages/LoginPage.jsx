@@ -26,8 +26,13 @@ const LoginPage = () => {
     setLoading(true);
     setError(null);
     try {
-      await login(email, password);
-      navigate(from, { replace: true });
+      const response = await login(email, password);
+      // Navigate based on role
+      if (response?.role === 'ADMIN') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate(from === '/login' ? '/' : from, { replace: true });
+      }
     } catch (err) {
       setError(typeof err === 'string' ? err : 'Invalid email or password. Please try again.');
     } finally {
