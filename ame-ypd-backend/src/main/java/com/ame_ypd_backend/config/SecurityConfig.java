@@ -64,6 +64,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/prayers/pending").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/approve").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/reject").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/auth/promote/**").hasRole("ADMIN")
 
                 .anyRequest().authenticated()
