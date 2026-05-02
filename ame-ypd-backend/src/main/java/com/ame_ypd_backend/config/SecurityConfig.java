@@ -2,7 +2,6 @@ package com.ame_ypd_backend.config;
 
 import com.ame_ypd_backend.security.JwtAuthenticationFilter;
 import com.ame_ypd_backend.security.RateLimitingFilter;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,21 +30,26 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(org.springframework.security.config.Customizer.withDefaults())  // ADD THIS LINE
+            .cors(org.springframework.security.config.Customizer.withDefaults())
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+
+                // ── Public endpoints ──────────────────────────────────
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/blog/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/charges/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/prayers/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/media/**").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
+
+                // ── Authenticated (MEMBER or ADMIN) ───────────────────
                 .requestMatchers(HttpMethod.POST, "/events/*/rsvp/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/events/rsvp/*/cancel").authenticated()
                 .requestMatchers(HttpMethod.POST, "/prayers/*/pray").authenticated()
+
+                // ── ADMIN only ────────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/events/**").hasRole("ADMIN")
@@ -60,15 +64,16 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/prayers/pending").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/approve").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/reject").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/auth/create-admin").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/auth/promote/**").hasRole("ADMIN")
+
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class);
+            // Rate limiter FIRST, then JWT — order matters
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-            // Allow H2 console frames
-            http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
+        // Allow H2 console frames in dev
+        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
