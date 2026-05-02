@@ -3,7 +3,17 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import chargeService from '../../services/chargeService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const EMPTY_CHARGE = { chargeName:'', area:'', city:'', address:'', pastorName:'', pastorContact:'', phone:'', email:'', memberCount:'', serviceTime:'Sunday 10:00', status:'ACTIVE' };
+const EMPTY_CHARGE = { 
+  chargeName:'', 
+  district:'',        // was 'area'
+  city:'', 
+  address:'', 
+  ministerName:'',    // was 'pastorName'
+  contactPhone:'',    // was 'pastorContact' and 'phone'
+  contactEmail:'',    // was 'email'
+  serviceTime:'Sunday 10:00', 
+  isActive: true 
+};
 
 const AdminCharges = () => {
   const [charges, setCharges] = useState([]);
