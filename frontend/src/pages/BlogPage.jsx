@@ -77,7 +77,7 @@ const BlogPage = () => {
               <p style={{ fontSize:14, color:'#6b8070', lineHeight:1.8, marginBottom:20 }}>{featured.excerpt}</p>
               <div style={{ display:'flex', gap:12, alignItems:'center', marginBottom:24, flexWrap:'wrap' }}>
                 <div style={{ width:36, height:36, borderRadius:'50%', background:'#1a4731', border:'2px solid #c9a84c', display:'flex', alignItems:'center', justifyContent:'center', color:'#c9a84c', fontWeight:700, fontSize:12, fontFamily:'Georgia,serif', flexShrink:0 }}>
-                  {featured.authorName.split(' ').map(w=>w[0]).join('')}
+                  {(featured.authorName || 'A').split(' ').map(w=>w[0]).join('').slice(0,2)}
                 </div>
                 <div>
                   <div style={{ fontSize:13, fontWeight:700, color:'#0d2b1a' }}>{featured.authorName}</div>
