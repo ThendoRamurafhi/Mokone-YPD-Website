@@ -35,6 +35,9 @@ public class Media {
     @Enumerated(EnumType.STRING)
     private MediaCategory category = MediaCategory.GENERAL;
 
+    @Enumerated(EnumType.STRING)
+    private MediaUsage usage = MediaUsage.GALLERY;  // NEW: Where this media is used
+
     private String title;
     private String description;
     private String uploadedBy;
@@ -51,16 +54,33 @@ public class Media {
     }
 
     public enum MediaType {
-        IMAGE,
-        VIDEO,
-        DOCUMENT
+        IMAGE,      // Photos, graphics
+        VIDEO,      // Local videos or YouTube links
+        DOCUMENT    // PDFs, docs
     }
 
     public enum MediaCategory {
-        GENERAL,
-        EVENTS,
-        WORSHIP,
-        YOUTH,
-        COMMUNITY
+        EVENTS,         // Event photos/videos
+        WORSHIP,        // Worship services
+        YOUTH,          // Youth programs
+        COMMUNITY,      // Community outreach
+        LEADERSHIP,     // Leadership photos
+        GALLERY,        // General photo gallery
+        HERO_IMAGES,    // Homepage hero images
+        BLOG_IMAGES,    // Blog post images
+        STRUCTURE,      // Org structure photos
+        ABOUT,          // About page images
+        GENERAL         // Uncategorized
+    }
+
+    public enum MediaUsage {
+        GALLERY,        // Public media gallery
+        BLOG_FEATURED,  // Featured blog image
+        BLOG_INLINE,    // Inline blog content
+        HERO_SECTION,   // Homepage hero
+        LEADERSHIP_PROFILE, // Leader headshots
+        EVENT_COVER,    // Event featured image
+        PAGE_HEADER,    // Page header backgrounds
+        GENERAL         // General use
     }
 }
