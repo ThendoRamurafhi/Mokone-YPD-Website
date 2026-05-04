@@ -59,7 +59,24 @@ const AdminBlog = () => {
             <div style={{ marginBottom:16 }}>
               <label style={labelStyle}>TITLE *</label>
               <input required value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Post title" style={inputStyle} />
+              // Add this field to your form, after the title input:
+              <label style={labelStyle}>FEATURED IMAGE URL (optional)</label>
+              <input 
+                value={form.featuredImageUrl||''} 
+                onChange={e=>setForm({...form,featuredImageUrl:e.target.value})} 
+                placeholder="https://... or upload via Media Library first, then paste URL" 
+                style={inputStyle} 
+              />
+              {form.featuredImageUrl && (
+                <img 
+                  src={form.featuredImageUrl} 
+                  alt="preview" 
+                  style={{ width:'100%', maxHeight:160, objectFit:'cover', borderRadius:6, marginTop:8, border:'1px solid rgba(0,0,0,.1)' }} 
+                  onError={e=>e.target.style.display='none'}
+                />
+              )}
             </div>
+            
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
               <div>
                 <label style={labelStyle}>CATEGORY</label>
