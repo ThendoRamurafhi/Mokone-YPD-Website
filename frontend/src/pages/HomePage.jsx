@@ -322,13 +322,17 @@ const HomePage = () => {
               <div>
                 <h3 style={{ fontFamily:'Georgia,serif', fontSize:17, fontWeight:600, color:'#0d2b1a', marginBottom:14 }}>Recent Updates</h3>
                 <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                  {updates.map(item => (
-                    <div key={item.id} style={{ background:'#fff', border:'1px solid rgba(0,0,0,0.07)', borderRadius:10, padding:'14px 16px', display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
+                  {updates.length === 0 ? (
+                    <p style={{ fontSize: 13, color: '#aaa', padding: '12px 0' }}>No announcements yet.</p>
+                  ) : updates.map(item => (
+                    <div key={item.postId} style={{ background:'#fff', border:'1px solid rgba(0,0,0,0.07)', borderRadius:10, padding:'14px 16px', display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
                       <div>
                         <div style={{ fontSize:13, fontWeight:600, color:'#0d2b1a', marginBottom:4 }}>{item.title}</div>
                         <div style={{ fontSize:12, color:'#6b8070', lineHeight:1.5 }}>{item.excerpt}</div>
                       </div>
-                      <span style={{ fontSize:11, color:'#aaa', whiteSpace:'nowrap', flexShrink:0 }}>{item.timeAgo}</span>
+                      <span style={{ fontSize:11, color:'#aaa', whiteSpace:'nowrap', flexShrink:0 }}>
+                        {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-ZA', { month:'short', day:'numeric' }) : ''}
+                      </span>
                     </div>
                   ))}
                 </div>
