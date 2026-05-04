@@ -20,7 +20,7 @@ public class BlogController {
     private BlogPostService blogPostService;
 
     // POST /api/v1/blog
-    @PostMapping
+    @PostMapping({"", "/posts"})
     public ResponseEntity<BlogPostResponseDTO> createPost(
             @Valid @RequestBody BlogPostRequestDTO dto) {
         return ResponseEntity
