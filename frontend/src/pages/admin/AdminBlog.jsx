@@ -3,8 +3,8 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import blogService from '../../services/blogService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const EMPTY_POST = { title:'', excerpt:'', content:'', category:'NEWS', status:'PUBLISHED' };
-const POST_CATS  = ['ANNOUNCEMENT','SERMON','TESTIMONY','NEWS','RESOURCE'];
+const EMPTY_POST = { title:'', excerpt:'', content:'', category:'GENERAL', status:'PUBLISHED' };
+const POST_CATS = ['ANNOUNCEMENT','COMMUNITY','DEVOTIONAL','GENERAL','TESTIMONY','YOUTH'];
 
 const AdminBlog = () => {
   const [posts,   setPosts]   = useState([]);
