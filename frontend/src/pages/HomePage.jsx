@@ -85,24 +85,34 @@ const HomePage = () => {
     const fetchHomeData = async () => {
       try {
         setLoading(true);
-        const eventsResponse = await eventService.getAll({ page: 0, size: 3 });
-        setUpcomingEvents(eventsResponse.content || []);
+        const today = new Date().toISOString().slice(0, 10); // "2026-05-04"
 
+        // ── Events: filter to PUBLISHED + future, sort ascending, take 3 ──
+        const eventsResponse = await eventService.getAll({ page: 0, size: 50 });
+        const allEvents = eventsResponse.content || eventsResponse || [];
+        const upcoming = allEvents
+          .filter(e => e.status === 'PUBLISHED' && e.eventDate >= today)
+          .sort((a, b) => a.eventDate.localeCompare(b.eventDate)) // O(n log n)
+          .slice(0, 3);
+        setUpcomingEvents(upcoming);
+
+        // ── Blog posts ──
         const blogResponse = await blogService.getAll({ page: 0, size: 3 });
-        setLatestPosts(blogResponse.content || []);
+        setLatestPosts(blogResponse.content || blogResponse || []);
 
+        // ── Featured sermon ──
         const sermonResponse = await blogService.getAll({ category: 'SERMON', page: 0, size: 1 });
-        if (sermonResponse.content && sermonResponse.content.length > 0) {
-          setFeaturedSermon(sermonResponse.content[0]);
-        }
+        const sermons = sermonResponse.content || sermonResponse || [];
+        if (sermons.length > 0) setFeaturedSermon(sermons[0]);
 
+        // ── Announcements/updates ──
         const updatesResponse = await blogService.getAll({ category: 'ANNOUNCEMENT', page: 0, size: 4 });
-        setUpdates(updatesResponse.content || []);
+        setUpdates(updatesResponse.content || updatesResponse || []);
 
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching home data:', err);
         setError('Failed to load content. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
