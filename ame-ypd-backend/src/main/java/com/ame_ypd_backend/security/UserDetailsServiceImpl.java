@@ -3,6 +3,7 @@ package com.ame_ypd_backend.security;
 import com.ame_ypd_backend.entity.User;
 import com.ame_ypd_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,18 +17,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
+   @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException(
-                "User not found with email: " + email));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
-        // Convert our Role enum into Spring Security's authority format
+        // Spring's hasRole("ADMIN") expects "ROLE_ADMIN"
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+
         return new org.springframework.security.core.userdetails.User(
             user.getEmail(),
             user.getPasswordHash(),
-            List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+            List.of(authority)
         );
     }
 }
