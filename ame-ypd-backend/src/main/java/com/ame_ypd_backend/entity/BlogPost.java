@@ -71,6 +71,9 @@ public class BlogPost {
         ANNOUNCEMENT,
         TESTIMONY,
         YOUTH,
-        COMMUNITY
+        COMMUNITY,
+        SERMON,
+        NEWS,
+        RESOURCE
     }
 }
