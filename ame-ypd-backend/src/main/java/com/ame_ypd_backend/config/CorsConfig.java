@@ -32,7 +32,14 @@ public class CorsConfig {
         ));
         
         // Allow all headers
-        config.setAllowedHeaders(Arrays.asList("*"));
+        // Replace the wildcard line with this:
+        config.setAllowedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type", 
+            "Accept",
+            "Origin",
+            "X-Requested-With"
+        ));
         
         // Expose Authorization header to frontend
         config.setExposedHeaders(Arrays.asList("Authorization"));
