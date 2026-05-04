@@ -28,7 +28,7 @@ const BlogPage = () => {
     fetch();
   }, []);
 
-  const categories = ['ALL','SERMON','ANNOUNCEMENT','TESTIMONY','NEWS','RESOURCE'];
+  const categories = ['ALL','SERMON','ANNOUNCEMENT','TESTIMONY','NEWS','RESOURCE','DEVOTIONAL','YOUTH','COMMUNITY'];
   const CAT_STYLE  = { SERMON:{bg:'rgba(37,96,64,.1)',text:'#256040'}, ANNOUNCEMENT:{bg:'rgba(201,168,76,.15)',text:'#7d5b00'}, TESTIMONY:{bg:'rgba(180,60,60,.08)',text:'#8a2020'}, NEWS:{bg:'rgba(30,80,140,.08)',text:'#1e508c'}, RESOURCE:{bg:'rgba(60,60,180,.08)',text:'#3c3cb4'} };
   const ACCENT     = { SERMON:'#1a4731', ANNOUNCEMENT:'#c9a84c', TESTIMONY:'#7a2020', NEWS:'#1e508c', RESOURCE:'#3c3cb4' };
 
