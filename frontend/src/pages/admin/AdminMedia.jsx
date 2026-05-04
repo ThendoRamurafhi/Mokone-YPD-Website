@@ -8,7 +8,7 @@ const AdminMedia = () => {
   const [loading,  setLoading]  = useState(true);
   const [uploading,setUploading]= useState(false);
   const [filter,   setFilter]   = useState('ALL');
-  const [form,     setForm]     = useState({ title:'', category:'Events', mediaType:'IMAGE' });
+  const [form,     setForm]     = useState({ title:'', category:'EVENTS', mediaType:'IMAGE' });
   const fileRef = useRef(null);
 
   const load = async () => {
@@ -31,7 +31,7 @@ const AdminMedia = () => {
     try {
       await mediaService.upload(fd);
       await load();
-      setForm({ title:'', category:'Events', mediaType:'IMAGE' });
+      setForm({ title:'', category:'EVENTS', mediaType:'IMAGE' });
       if (fileRef.current) fileRef.current.value = '';
     } catch (err) {
       alert(typeof err==='string' ? err : 'Upload failed. Check file size and type.');
@@ -71,7 +71,11 @@ const AdminMedia = () => {
             </div>
             <div>
               <label style={labelStyle}>CATEGORY</label>
-              <input value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder="Events" style={inputStyle} />
+              <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} style={inputStyle}>
+                {['EVENTS','WORSHIP','YOUTH','COMMUNITY','GENERAL'].map(c=>
+                  <option key={c} value={c}>{c}</option>
+                )}
+              </select>
             </div>
             <div>
               <label style={labelStyle}>FILE *</label>
