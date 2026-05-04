@@ -3,7 +3,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import blogService from '../../services/blogService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const EMPTY_POST = { title:'', excerpt:'', content:'', category:'GENERAL', status:'PUBLISHED' };
+const EMPTY_POST = { title:'', excerpt:'', content:'', category:'GENERAL', status:'PUBLISHED', featuredImageUrl:'' };
 const POST_CATS = ['ANNOUNCEMENT','COMMUNITY','DEVOTIONAL','GENERAL','TESTIMONY','YOUTH'];
 
 const AdminBlog = () => {
@@ -76,7 +76,7 @@ const AdminBlog = () => {
                 />
               )}
             </div>
-            
+
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
               <div>
                 <label style={labelStyle}>CATEGORY</label>
