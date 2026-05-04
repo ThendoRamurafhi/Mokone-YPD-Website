@@ -126,4 +126,11 @@ public class BlogPostService {
         }
         return slug;
     }
+
+    public BlogPostResponseDTO getPostById(Long id) {
+        BlogPost post = blogPostRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Post not found: " + id));
+        post.setViewCount(post.getViewCount() + 1);
+        return new BlogPostResponseDTO(blogPostRepository.save(post));
+    }
 }

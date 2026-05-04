@@ -40,6 +40,13 @@ public class BlogController {
         return ResponseEntity.ok(blogPostService.getPostBySlug(slug));
     }
 
+    // GET /api/v1/blog/posts/:id  — fetch by numeric ID for shareable links
+    @GetMapping("/posts/{id}")
+    public ResponseEntity<BlogPostResponseDTO> getPostById(@PathVariable Long id) {
+        // Increment view count and return
+        return ResponseEntity.ok(blogPostService.getPostById(id));
+    }
+
     // GET /api/v1/blog/category/DEVOTIONAL
     @GetMapping("/category/{category}")
     public ResponseEntity<List<BlogPostResponseDTO>> getByCategory(
