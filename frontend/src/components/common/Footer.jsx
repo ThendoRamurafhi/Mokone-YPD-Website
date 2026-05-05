@@ -2,25 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import YPDLogo from './YPDLogo';
 
-/* ── YPD SVG Logo — same style as Navigation, fixes the "broken logo" issue ── */
-// const YPDLogo = () => (
-//   <svg width="42" height="42" viewBox="0 0 42 42" fill="none" aria-label="AME YPD Logo">
-//     <circle cx="21" cy="21" r="20" fill="#0d2b1a" stroke="#c9a84c" strokeWidth="1.8"/>
-//     <circle cx="21" cy="21" r="15" fill="none" stroke="#c9a84c" strokeWidth="0.6" strokeDasharray="2 2"/>
-//     <text
-//       x="21" y="25"
-//       textAnchor="middle"
-//       fill="#c9a84c"
-//       fontSize="10"
-//       fontWeight="700"
-//       fontFamily="Georgia, 'Times New Roman', serif"
-//       letterSpacing="1"
-//     >
-//       YPD
-//     </text>
-//   </svg>
-// );
-
 const Footer = () => {
   return (
     <footer
