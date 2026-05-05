@@ -21,6 +21,7 @@ public class BlogPostResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
+    private String readTime;
 
     public BlogPostResponseDTO(BlogPost post) {
         this.postId = post.getPostId();
@@ -37,5 +38,9 @@ public class BlogPostResponseDTO {
         this.createdAt = post.getCreatedAt();
         this.publishedAt = post.getPublishedAt();
         this.updatedAt = post.getUpdatedAt();
+
+        // Estimate read time: avg 200 words/minute
+        int wordCount = post.getContent() == null ? 0 : post.getContent().split("\\s+").length;
+        this.readTime = Math.max(1, wordCount / 200) + " min";
     }
 }
