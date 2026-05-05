@@ -12,10 +12,10 @@ const blogService = {
   create: (data) => api.post('/blog/posts', data),
 
   // PUT /api/v1/blog/posts/:id
-  update: (id, data) => api.put(`/blog/posts/${id}`, data),
+  update: (id, data) => api.put(`/blog/${id}`, data),
 
   // DELETE /api/v1/blog/posts/:id
-  remove: (id) => api.delete(`/blog/posts/${id}`),
+  remove: (id) => api.delete(`/blog/${id}`),
 };
 
 export default blogService;
