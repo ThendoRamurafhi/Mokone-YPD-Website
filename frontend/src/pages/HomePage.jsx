@@ -53,8 +53,10 @@ const HomePage = () => {
   // New API states
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [latestPosts,    setLatestPosts]    = useState([]);
-  const [featuredSermon, setFeaturedSermon] = useState(null);
   const [updates,        setUpdates]        = useState([]);
+  const [featuredVideo,   setFeaturedVideo]   = useState(null);  // YouTube video from Media
+  const [heroImages,      setHeroImages]      = useState([]);    // Hero images from Media
+  const [stayInformedEvs, setStayInformedEvs] = useState([]);    // Events for STAY INFORMED
   const [loading,        setLoading]        = useState(true);
   const [error,          setError]          = useState(null);
 
@@ -96,14 +98,29 @@ const HomePage = () => {
           .slice(0, 3);
         setUpcomingEvents(upcoming);
 
+        // ── Events for STAY INFORMED (4 most recent published) ──
+        const stayEvs = allEvents
+          .filter(e => e.status === 'PUBLISHED')
+          .sort((a, b) => b.eventDate.localeCompare(a.eventDate))
+          .slice(0, 4);
+        setStayInformedEvs(stayEvs);
+
         // ── Blog posts ──
         const blogResponse = await blogService.getAll({ page: 0, size: 3 });
         setLatestPosts(blogResponse.content || blogResponse || []);
 
-        // ── Featured sermon ──
-        const sermonResponse = await blogService.getAll({ category: 'SERMON', page: 0, size: 1 });
-        const sermons = sermonResponse.content || sermonResponse || [];
-        if (sermons.length > 0) setFeaturedSermon(sermons[0]);
+        // ── Media: featured YouTube video for THIS WEEK'S MESSAGE ──
+        try {
+          const sermonVideos = await mediaService.getByCategory('WORSHIP');
+          const ytVideos = sermonVideos.filter(m => m.isYoutubeVideo);
+          if (ytVideos.length > 0) setFeaturedVideo(ytVideos[0]);
+        } catch { /* media optional */ }
+
+        // ── Media: hero images ──
+        try {
+          const heroMedia = await mediaService.getByUsage('HERO_SECTION');
+          setHeroImages(heroMedia.filter(m => m.mediaType === 'IMAGE'));
+        } catch { /* media optional */ }
 
         // ── Announcements/updates ──
         const updatesResponse = await blogService.getAll({ category: 'ANNOUNCEMENT', page: 0, size: 4 });
@@ -135,67 +152,65 @@ const HomePage = () => {
       {/* ══════════════════════════════════════
           HERO
       ══════════════════════════════════════ */}
-      <section style={{ background:'linear-gradient(150deg,#071812 0%,#0d2b1a 45%,#1a4731 80%,#0d2218 100%)', minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'100px 24px 60px', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:'18%', left:'50%', transform:'translateX(-50%)', width:420, height:420, background:'radial-gradient(circle,rgba(201,168,76,0.06) 0%,transparent 70%)', pointerEvents:'none' }} />
+      <section style={{ background: 'linear-gradient(150deg,#071812 0%,#0d2b1a 45%,#1a4731 80%,#0d2218 100%)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 60px', position: 'relative', overflow: 'hidden' }}>
+        {/* Hero background image from media (if available) */}
+        {heroImages.length > 0 && (
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${heroImages[0].fileUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15 }} />
+        )}
+        <div style={{ position: 'absolute', top: '18%', left: '50%', transform: 'translateX(-50%)', width: 420, height: 420, background: 'radial-gradient(circle,rgba(201,168,76,0.06) 0%,transparent 70%)', pointerEvents: 'none' }} />
 
-        <div style={{ position:'relative', zIndex:2, textAlign:'center', maxWidth:700 }}>
-          <div style={{ display:'flex', justifyContent:'center', marginBottom:28 }}>
-            <div style={{ position:'relative' }}>
-              <div style={{ position:'absolute', inset:-10, borderRadius:'50%', border:'1px solid rgba(201,168,76,0.3)', animation:'pulse 3s ease-in-out infinite' }} />
+        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: 700 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', inset: -10, borderRadius: '50%', border: '1px solid rgba(201,168,76,0.3)', animation: 'pulse 3s ease-in-out infinite' }} />
               <YPDLogo width={99} height={99} />
             </div>
           </div>
 
-          <div style={{ color:'#c9a84c', fontSize:10, fontWeight:700, letterSpacing:'0.28em', marginBottom:18 }}>
+          <div style={{ color: '#c9a84c', fontSize: 10, fontWeight: 700, letterSpacing: '0.28em', marginBottom: 18 }}>
             AFRICAN METHODIST EPISCOPAL CHURCH
           </div>
 
-          <h1 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:'clamp(3rem,8vw,6rem)', fontWeight:700, color:'#fff', lineHeight:1.02, marginBottom:18 }}>
+          <h1 style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: 'clamp(3rem,8vw,6rem)', fontWeight: 700, color: '#fff', lineHeight: 1.02, marginBottom: 18 }}>
             Welcome to AME Church<br />
-            <span style={{ color:'#c9a84c', fontStyle:'italic' }}>Young People's Division</span>
+            <span style={{ color: '#c9a84c', fontStyle: 'italic' }}>Young People's Division</span>
           </h1>
 
-          <p style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:18, color:'rgba(255,255,255,0.55)', fontStyle:'italic', marginBottom:10 }}>
+          <p style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: 18, color: 'rgba(255,255,255,0.55)', fontStyle: 'italic', marginBottom: 10 }}>
             Inspired by Luke 17:20–21 · Discover the Kingdom Within
           </p>
-          <p style={{ fontSize:15, color:'rgba(255,255,255,0.65)', lineHeight:1.8, maxWidth:500, margin:'0 auto 44px' }}>
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', lineHeight: 1.8, maxWidth: 500, margin: '0 auto 44px' }}>
             Empowering youth and young adults to grow in faith, leadership, and community. Join us on this journey of spiritual growth.
           </p>
 
-          <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap', marginBottom:52 }}>
-            <Link to="/register" style={{ background:'#c9a84c', color:'#0d2b1a', padding:'15px 36px', borderRadius:4, textDecoration:'none', fontWeight:700, fontSize:13, letterSpacing:'0.1em', transition:'background 0.2s' }}
-              onMouseEnter={e=>e.currentTarget.style.background='#e0c060'} onMouseLeave={e=>e.currentTarget.style.background='#c9a84c'}>
+          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 52 }}>
+            <Link to="/register" style={{ background: '#c9a84c', color: '#0d2b1a', padding: '15px 36px', borderRadius: 4, textDecoration: 'none', fontWeight: 700, fontSize: 13, letterSpacing: '0.1em' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#e0c060'} onMouseLeave={e => e.currentTarget.style.background = '#c9a84c'}>
               JOIN OUR COMMUNITY
             </Link>
-            <Link to="/about" style={{ border:'1.5px solid rgba(255,255,255,0.45)', color:'#fff', padding:'15px 36px', borderRadius:4, textDecoration:'none', fontSize:13, letterSpacing:'0.1em', transition:'all 0.2s' }}
-              onMouseEnter={e=>{ e.currentTarget.style.borderColor='#c9a84c'; e.currentTarget.style.color='#c9a84c'; }}
-              onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.45)'; e.currentTarget.style.color='#fff'; }}>
+            <Link to="/about" style={{ border: '1.5px solid rgba(255,255,255,0.45)', color: '#fff', padding: '15px 36px', borderRadius: 4, textDecoration: 'none', fontSize: 13, letterSpacing: '0.1em' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#c9a84c'; e.currentTarget.style.color = '#c9a84c'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.45)'; e.currentTarget.style.color = '#fff'; }}>
               LEARN MORE
             </Link>
           </div>
 
           {/* Newsletter */}
-          <div style={{ background:'rgba(255,255,255,0.05)', backdropFilter:'blur(8px)', border:'1px solid rgba(201,168,76,0.22)', borderRadius:10, padding:'26px 30px', maxWidth:480, margin:'0 auto' }}>
+          <div style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(8px)', border: '1px solid rgba(201,168,76,0.22)', borderRadius: 10, padding: '26px 30px', maxWidth: 480, margin: '0 auto' }}>
             {subscribed
-              ? <p style={{ color:'#c9a84c', fontFamily:'Georgia,serif', fontSize:16 }}>✦ Welcome to the community! We'll be in touch.</p>
+              ? <p style={{ color: '#c9a84c', fontFamily: 'Georgia,serif', fontSize: 16 }}>✦ Welcome to the community! We'll be in touch.</p>
               : <>
-                  <p style={{ fontSize:10, fontWeight:700, letterSpacing:'0.22em', color:'#c9a84c', marginBottom:14 }}>BE THE FIRST TO KNOW — THE EVENT IS LIVE</p>
-                  <p style={{ fontSize:13, color:'rgba(255,255,255,0.45)', marginBottom:14 }}>Subscribe for an exclusive preview before anyone else.</p>
-                  <form onSubmit={handleSubscribe} style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                    <input type="email" placeholder="Enter your email" value={email} onChange={e=>setEmail(e.target.value)} required
-                      style={{ flex:1, minWidth:180, padding:'11px 14px', background:'rgba(255,255,255,0.09)', border:'1px solid rgba(255,255,255,0.18)', borderRadius:4, color:'#fff', fontSize:14, outline:'none' }} />
-                    <button type="submit" style={{ background:'#c9a84c', color:'#0d2b1a', border:'none', padding:'11px 20px', borderRadius:4, cursor:'pointer', fontWeight:700, fontSize:12, letterSpacing:'0.08em', whiteSpace:'nowrap' }}>
-                      Subscribe Now
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', color: '#c9a84c', marginBottom: 14 }}>STAY CONNECTED WITH MOKONE YPD</p>
+                  <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required
+                      style={{ flex: 1, minWidth: 180, padding: '11px 14px', background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 4, color: '#fff', fontSize: 14, outline: 'none' }} />
+                    <button type="submit" style={{ background: '#c9a84c', color: '#0d2b1a', border: 'none', padding: '11px 20px', borderRadius: 4, cursor: 'pointer', fontWeight: 700, fontSize: 12, letterSpacing: '0.08em' }}>
+                      Subscribe
                     </button>
                   </form>
                 </>
             }
           </div>
-        </div>
-
-        <div style={{ position:'absolute', bottom:28, left:'50%', transform:'translateX(-50%)', display:'flex', flexDirection:'column', alignItems:'center', gap:6, animation:'bounce 2.5s ease-in-out infinite' }}>
-          <span style={{ fontSize:9, letterSpacing:'0.2em', color:'rgba(255,255,255,0.28)' }}>SCROLL</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </section>
 
@@ -262,15 +277,17 @@ const HomePage = () => {
                 <div>
                   <div style={{ fontFamily:'Georgia,serif', fontSize:17, fontWeight:600, color:'#1a4731', marginBottom:5 }}>Upcoming Events</div>
                   <div style={{ fontSize:13, color:'#6b8070', lineHeight:1.5, marginBottom:14 }}>Join us for worship and fellowship</div>
-                  {upcomingEvents.map(ev => (
-                    <div key={ev.eventId} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid rgba(0,0,0,0.05)' }}>
+                  {upcomingEvents.length === 0 ? (
+                    <p style={{ fontSize: 13, color: '#aaa' }}>No upcoming events yet.</p>
+                  ) : upcomingEvents.map(ev => (
+                    <div key={ev.eventId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                       <div>
-                        <div style={{ fontSize:13, fontWeight:600, color:'#0d2b1a' }}>{ev.title}</div>
-                        <div style={{ fontSize:11, color:'#6b8070' }}>📍 {ev.location}</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#0d2b1a' }}>{ev.title}</div>
+                        <div style={{ fontSize: 11, color: '#6b8070' }}>📍 {ev.location}</div>
                       </div>
-                      <div style={{ textAlign:'right', flexShrink:0, marginLeft:12 }}>
-                        <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', padding:'3px 8px', borderRadius:3, background:categoryColors[ev.category]?.bg||'#e6f4ea', color:categoryColors[ev.category]?.text||'#1a6640' }}>{ev.category}</div>
-                        <div style={{ fontSize:11, color:'#6b8070', marginTop:3 }}>{daysUntil(ev.eventDate)}d away</div>
+                      <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', padding: '3px 8px', borderRadius: 3, background: categoryColors[ev.category]?.bg || '#e6f4ea', color: categoryColors[ev.category]?.text || '#1a6640' }}>{ev.category}</div>
+                        <div style={{ fontSize: 11, color: '#6b8070', marginTop: 3 }}>{daysUntil(ev.eventDate)}d away</div>
                       </div>
                     </div>
                   ))}
@@ -279,15 +296,15 @@ const HomePage = () => {
               </Link>
 
               {/* Sermons tile */}
-              <Link to="/media" style={{ display:'flex', alignItems:'flex-start', gap:18, background:'#fff', border:'1px solid rgba(0,0,0,0.07)', borderRadius:14, padding:'24px 22px', textDecoration:'none', transition:'box-shadow 0.25s,transform 0.25s' }}
-                onMouseEnter={e=>{ e.currentTarget.style.boxShadow='0 12px 32px rgba(26,71,49,0.12)'; e.currentTarget.style.transform='translateY(-3px)'; }}
-                onMouseLeave={e=>{ e.currentTarget.style.boxShadow='none'; e.currentTarget.style.transform='translateY(0)'; }}>
-                <div style={{ width:52, height:52, borderRadius:12, flexShrink:0, background:'rgba(201,168,76,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Link to="/media" style={{ display: 'flex', alignItems: 'flex-start', gap: 18, background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 14, padding: '24px 22px', textDecoration: 'none', transition: 'box-shadow 0.25s,transform 0.25s' }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 32px rgba(26,71,49,0.12)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <div style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0, background: 'rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
                 </div>
                 <div>
-                  <div style={{ fontFamily:'Georgia,serif', fontSize:17, fontWeight:600, color:'#1a4731', marginBottom:5 }}>Latest Sermons</div>
-                  <div style={{ fontSize:13, color:'#6b8070' }}>Watch our recent messages</div>
+                  <div style={{ fontFamily: 'Georgia,serif', fontSize: 17, fontWeight: 600, color: '#1a4731', marginBottom: 5 }}>Latest Sermons</div>
+                  <div style={{ fontSize: 13, color: '#6b8070' }}>Watch our recent messages on YouTube</div>
                 </div>
               </Link>
 
@@ -307,6 +324,7 @@ const HomePage = () => {
 
             {/* RIGHT column */}
             <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+              {/* Featured sermon video card */}
               <div style={{ borderRadius:14, overflow:'hidden', border:'1px solid rgba(0,0,0,0.07)' }}>
                 <div style={{ background:'linear-gradient(135deg,#1a4731,#40916c)', height:200, display:'flex', alignItems:'center', justifyContent:'center', position:'relative', cursor:'pointer' }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
@@ -359,26 +377,52 @@ const HomePage = () => {
                 "The kingdom of God is within you — not in outward signs, but in the transformation of the heart."
               </p>
               <p style={{ fontFamily:"'Lato',sans-serif", fontSize:13, color:'rgba(255,255,255,0.4)', marginBottom:36 }}>— Rev. John Doe · Luke 17:20-21</p>
-              <p style={{ fontFamily:"'Lato',sans-serif", fontSize:15, color:'rgba(255,255,255,0.6)', lineHeight:1.8, marginBottom:36 }}>
-                Tune in to our latest sermon where we dive deep into faith and inspiration. Experience spiritual renewal and discover the Kingdom within you this week.
+              <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, marginBottom: 36 }}>
+                {featuredVideo?.description || 'Tune in to our latest sermon where we dive deep into faith and inspiration. Experience spiritual renewal this week.'}
               </p>
-              <button onClick={()=>setPlaying(true)} className="btn-gold" style={{ display:'flex', alignItems:'center', gap:10, border:'none', cursor:'pointer', fontSize:13 }}>
-                <NavIcons.Play /> WATCH NOW
-              </button>
+              {featuredVideo?.youtubeWatchUrl ? (
+                <a href={featuredVideo.youtubeWatchUrl} target="_blank" rel="noopener noreferrer"
+                  className="btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', fontSize: 13 }}>
+                  ▶ WATCH ON YOUTUBE
+                </a>
+              ) : (
+                <button onClick={() => setPlaying(true)} className="btn-gold" style={{ display: 'flex', alignItems: 'center', gap: 10, border: 'none', cursor: 'pointer', fontSize: 13 }}>
+                  <NavIcons.Play /> WATCH NOW
+                </button>
+              )}
             </div>
             <div>
-              <div onClick={()=>setPlaying(!playing)} style={{ background:'linear-gradient(135deg,#1a4731,#0d2218)', borderRadius:12, aspectRatio:'16/9', display:'flex', alignItems:'center', justifyContent:'center', border:'1px solid rgba(201,168,76,0.2)', cursor:'pointer', position:'relative', overflow:'hidden' }}>
-                <div style={{ position:'absolute', width:2, height:'60%', background:'rgba(201,168,76,0.15)', top:'20%', left:'50%' }} />
-                <div style={{ position:'absolute', height:2, width:'40%', background:'rgba(201,168,76,0.15)', top:'35%', left:'30%' }} />
-                {playing
-                  ? <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" style={{ position:'absolute', inset:0, width:'100%', height:'100%', border:'none', borderRadius:12 }} allowFullScreen title="Sermon" />
-                  : <div style={{ textAlign:'center' }}>
-                      <div style={{ width:72, height:72, borderRadius:'50%', background:'rgba(201,168,76,0.2)', border:'2px solid var(--gold)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
-                        <NavIcons.Play />
-                      </div>
-                      <p style={{ fontFamily:"'Cormorant Garamond',serif", color:'rgba(255,255,255,0.6)', fontSize:15 }}>Click to Watch Sermon</p>
+              <div style={{ background: 'linear-gradient(135deg,#1a4731,#0d2218)', borderRadius: 12, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(201,168,76,0.2)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+                onClick={() => {
+                  if (featuredVideo?.youtubeWatchUrl) {
+                    window.open(featuredVideo.youtubeWatchUrl, '_blank', 'noopener');
+                  } else {
+                    setPlaying(!playing);
+                  }
+                }}>
+                {/* Background thumbnail */}
+                {featuredVideo?.youtubeThumbnail && (
+                  <img src={featuredVideo.youtubeThumbnail} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+                )}
+                {playing && !featuredVideo ? (
+                  <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', borderRadius: 12 }}
+                    allowFullScreen title="Sermon" />
+                ) : (
+                  <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                    <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(201,168,76,0.2)', border: '2px solid var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                      <NavIcons.Play />
                     </div>
-                }
+                    <p style={{ fontFamily: "'Cormorant Garamond',serif", color: 'rgba(255,255,255,0.7)', fontSize: 15 }}>
+                      {featuredVideo ? featuredVideo.title : 'Click to Watch Sermon'}
+                    </p>
+                    {featuredVideo && (
+                      <p style={{ fontFamily: "'Lato',sans-serif", color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 6 }}>
+                        Opens on YouTube ↗
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginTop:16 }}>
                 {[['View','Access our sermon library'],['Share','Spread the Word with others'],['Discuss','Join group conversations'],['Join','Become a member today']].map(([t,d])=>(
@@ -411,9 +455,17 @@ const HomePage = () => {
               <article key={post.postId} className="blog-card">
                 <div style={{ height:5, background:i===0?'var(--green-dark)':i===1?'var(--gold)':'var(--green-soft)' }} />
                 <div style={{ height:180, background:i===0?'linear-gradient(135deg,#1a4731,#3a7d56)':i===1?'linear-gradient(135deg,#2d4a10,#5a8c1a)':'linear-gradient(135deg,#1a2a40,#2a4060)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:48, color:'rgba(255,255,255,0.15)', fontStyle:'italic' }}>
-                    {post.category==='SERMON'?'✝':post.category==='ANNOUNCEMENT'?'✦':'❝'}
-                  </span>
+                  {post.featuredImageUrl ? (
+                    <img src={post.featuredImageUrl} alt={post.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      onError={e => { e.target.style.display = 'none'; e.target.parentNode.style.background = 'linear-gradient(135deg,#1a4731,#3a7d56)'; }} />
+                  ) : (
+                    <div style={{ background: i === 0 ? 'linear-gradient(135deg,#1a4731,#3a7d56)' : i === 1 ? 'linear-gradient(135deg,#2d4a10,#5a8c1a)' : 'linear-gradient(135deg,#1a2a40,#2a4060)', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 48, color: 'rgba(255,255,255,0.15)', fontStyle: 'italic' }}>
+                        {post.category === 'SERMON' ? '✝' : post.category === 'ANNOUNCEMENT' ? '✦' : '❝'}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div style={{ padding:'24px 26px 28px' }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
@@ -452,26 +504,52 @@ const HomePage = () => {
       {/* ══════════════════════════════════════
           STAY INFORMED
       ══════════════════════════════════════ */}
-      <section id="updates" style={{ background:'var(--white)', padding:'100px 24px' }}>
-        <div style={{ maxWidth:1200, margin:'0 auto' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(340px,1fr))', gap:64, alignItems:'center' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'200px 200px', gap:12 }}>
-              {[{bg:'linear-gradient(135deg,#1a4731,#40916c)',text:'Community Life'},{bg:'linear-gradient(135deg,#0d2b1a,#1a4731)',text:'Sunday Worship'},{bg:'linear-gradient(135deg,#7d5b00,#c9a84c)',text:'Youth Programs'},{bg:'linear-gradient(135deg,#256040,#3a7d56)',text:'Outreach'}].map((b,i)=>(
-                <div key={i} style={{ background:b.bg, borderRadius:8, display:'flex', alignItems:'flex-end', padding:16 }}>
-                  <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, color:'rgba(255,255,255,0.65)', fontStyle:'italic' }}>{b.text}</span>
+      <section id="updates" style={{ background: 'var(--white)', padding: '100px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))', gap: 64, alignItems: 'center' }}>
+            {/* Event images mosaic — pulls from media EVENTS category */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '200px 200px', gap: 12 }}>
+              {[
+                { bg: 'linear-gradient(135deg,#1a4731,#40916c)', label: 'Conference' },
+                { bg: 'linear-gradient(135deg,#0d2b1a,#1a4731)', label: 'Worship' },
+                { bg: 'linear-gradient(135deg,#7d5b00,#c9a84c)', label: 'Youth' },
+                { bg: 'linear-gradient(135deg,#256040,#3a7d56)', label: 'Outreach' },
+              ].map((b, i) => (
+                <div key={i} style={{ background: b.bg, borderRadius: 8, display: 'flex', alignItems: 'flex-end', padding: 16 }}>
+                  <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, color: 'rgba(255,255,255,.65)', fontStyle: 'italic' }}>{b.label}</span>
                 </div>
               ))}
             </div>
+
+            {/* Text + event list */}
             <div>
               <span className="section-eyebrow">STAY INFORMED</span>
-              <h2 className="section-title" style={{ marginBottom:20 }}>Check Out Our Recent Updates</h2>
-              <p style={{ fontFamily:"'Lato',sans-serif", fontSize:15, color:'var(--text-light)', lineHeight:1.85, marginBottom:16 }}>
-                Stay connected with our community and discover upcoming events and initiatives. We share weekly updates on everything happening across our churches — from local outreach to national conference news.
+              <h2 className="section-title" style={{ marginBottom: 20 }}>Check Out Our Upcoming Events</h2>
+              <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 15, color: 'var(--text-light)', lineHeight: 1.85, marginBottom: 16 }}>
+                Stay connected with our community and discover upcoming events and initiatives. From local outreach to national conference gatherings — there's always something happening.
               </p>
-              <p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, color:'var(--green-mid)', fontStyle:'italic', marginBottom:32 }}>
+              <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, color: 'var(--green-mid)', fontStyle: 'italic', marginBottom: 24 }}>
                 "Iron sharpens iron, and one person sharpens another." — Proverbs 27:17
               </p>
-              <Link to="/blog" className="btn-gold">LEARN MORE</Link>
+
+              {/* Event list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+                {stayInformedEvs.length === 0 ? (
+                  <p style={{ fontSize: 13, color: '#aaa' }}>No events yet — check back soon!</p>
+                ) : stayInformedEvs.map(ev => (
+                  <div key={ev.eventId} style={{ background: '#f7f9f7', border: '1px solid rgba(26,71,49,0.1)', borderRadius: 8, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#0d2b1a' }}>{ev.title}</div>
+                      <div style={{ fontSize: 11, color: '#6b8070' }}>📅 {ev.eventDate} · 📍 {ev.location}</div>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 3, background: categoryColors[ev.category]?.bg || '#e6f4ea', color: categoryColors[ev.category]?.text || '#1a6640', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {ev.category}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <Link to="/events" className="btn-gold">SEE ALL EVENTS</Link>
             </div>
           </div>
         </div>
