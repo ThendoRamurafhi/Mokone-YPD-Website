@@ -35,30 +35,6 @@ public class SecurityConfig {
     private RateLimitingFilter rateLimitingFilter;
 
     // Add this bean inside SecurityConfig class:
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:5173"
-        ));
-        config.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
-        ));
-        config.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "Accept",
-            "Origin", "X-Requested-With", "Cache-Control"
-        ));
-        config.setExposedHeaders(List.of("Authorization"));
-        config.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
 
 
     @Bean
@@ -77,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/blog/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/charges/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/prayers/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/media/files/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/media/**").permitAll()
 
                 // ── Authenticated (MEMBER or ADMIN) ───────────────────
@@ -88,17 +65,25 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/events/**").hasRole("ADMIN")
+
                 .requestMatchers(HttpMethod.POST, "/blog/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/blog/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/blog/**").hasRole("ADMIN")
+
                 .requestMatchers(HttpMethod.POST, "/charges/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/charges/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/charges/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/media/**").hasRole("ADMIN")
+
+                // trying to fix the problem that i have when uploading files
+                .requestMatchers(HttpMethod.POST, "/media/upload").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/media/youtube").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/media/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/media/**").hasRole("ADMIN")
+
                 .requestMatchers(HttpMethod.GET, "/prayers/pending").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/approve").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/prayers/*/reject").hasRole("ADMIN")
+                
                 .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/users/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
