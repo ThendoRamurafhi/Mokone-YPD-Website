@@ -23,7 +23,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/media")
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+    origins = {"http://localhost:3000", "http://localhost:5173"}, 
+    allowCredentials = "true",
+    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.OPTIONS}
+)
 public class MediaController {
 
     @Autowired
