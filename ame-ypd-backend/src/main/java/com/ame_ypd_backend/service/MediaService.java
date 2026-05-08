@@ -81,7 +81,8 @@ public class MediaService {
         Media media = new Media();
         media.setFileName(sanitizeFileName(file.getOriginalFilename()));
         media.setStoredFileName(storedFileName);
-        media.setFileUrl("/api/v1/media/files/" + storedFileName);
+        //media.setFileUrl("/api/v1/media/files/" + storedFileName);
+        media.setFileUrl("http://localhost:8080/api/v1/media/files/" + storedFileName);
         media.setFileType(contentType);
         media.setFileSize(file.getSize());
         media.setMediaType(mediaType);
