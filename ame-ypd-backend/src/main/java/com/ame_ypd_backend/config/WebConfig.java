@@ -21,11 +21,6 @@ public class WebConfig implements WebMvcConfigurer {
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         String resourceLocation = "file:" + uploadPath.toString() + "/";
 
-        // Serve uploaded media files
-        registry.addResourceHandler("/api/v1/media/files/**")
-                .addResourceLocations(resourceLocation);
-                //.setCachePeriod(3600);   // cache 1 hour in browser
-
         // Also serve without the /api/v1 prefix for direct access
         registry.addResourceHandler("/api/v1/media/files/**")
                 .addResourceLocations(resourceLocation)
