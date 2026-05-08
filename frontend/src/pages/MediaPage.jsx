@@ -5,10 +5,10 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const MediaPage = () => {
   const [activeTab, setActiveTab] = useState('PHOTOS');
-  const [lightbox, setLightbox] = useState(null);
-  const [media, setMedia] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [lightbox, setLightbox]   = useState(null);
+  const [media, setMedia]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState(null);
 
  // ══════════════════════════════════════════════════════════════
   // LOAD MEDIA FROM API
@@ -51,6 +51,19 @@ const MediaPage = () => {
       return item.youtubeThumbnail;
     }
     return item.fileUrl;
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Handle video click ────────────────────────────────────────
+  // YouTube videos open YouTube directly; local videos open lightbox
+  // ══════════════════════════════════════════════════════════════
+
+  const handleCardClick = (item) => {
+    if (item.isYoutubeVideo && item.youtubeWatchUrl) {
+      window.open(item.youtubeWatchUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      setLightbox(item);
+    }
   };
 
   return (
@@ -150,7 +163,7 @@ const MediaPage = () => {
             {photos.slice(0, 6).map((m, i) => (
               <div
                 key={m.mediaId}
-                onClick={() => setLightbox(m)}
+                onClick={() => handleCardClick(m)}
                 className="media-card"
                 style={{
                   borderRadius: 0,
@@ -159,6 +172,7 @@ const MediaPage = () => {
                   display: 'flex',
                   alignItems: 'flex-end',
                   padding: 16,
+                  // backgroundImage: m.fileUrl ? `url(${m.fileUrl})` : 'linear-gradient(135deg,#1a4731,#40916c)',
                   backgroundImage: getMediaUrl(m) ? `url(${getMediaUrl(m)})` : 'none',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
@@ -370,7 +384,7 @@ const MediaPage = () => {
                         alignItems: 'center',
                         gap: 4
                       }}>
-                        ▶️ YouTube
+                         ▶  YouTube
                       </div>
                     )}
                   </div>
