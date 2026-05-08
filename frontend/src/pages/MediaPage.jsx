@@ -53,6 +53,15 @@ const MediaPage = () => {
     return item.fileUrl;
   };
 
+  // Add this helper at the top of AdminMedia.jsx and MediaPage.jsx
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    // If already full URL, return as-is
+    if (url.startsWith('http')) return url;
+    // If relative, prepend backend base URL
+    return `http://localhost:8080${url}`;
+  };
+
   // ══════════════════════════════════════════════════════════════
   // ── Handle video click ────────────────────────────────────────
   // YouTube videos open YouTube directly; local videos open lightbox
