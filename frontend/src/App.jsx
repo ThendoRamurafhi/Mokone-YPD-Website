@@ -12,6 +12,7 @@ import HomePage           from './pages/HomePage';
 import AboutPage          from './pages/AboutPage';
 import EventsPage         from './pages/EventsPage';
 import BlogPage           from './pages/BlogPage';
+import BlogPostDetail from './pages/BlogPostDetail';
 import ChargesPage        from './pages/ChargesPage';
 import MediaPage          from './pages/MediaPage';
 import ContactPage        from './pages/ContactPage';
@@ -58,6 +59,7 @@ function App() {
                     <Route path="/about"      element={<AboutPage />} />
                     <Route path="/events"     element={<EventsPage />} />
                     <Route path="/blog"       element={<BlogPage />} />
+                    <Route path="/blog/:id"   element={<BlogPostDetail />} />
                     <Route path="/charges"    element={<ChargesPage />} />
                     <Route path="/media"      element={<MediaPage />} />
                     <Route path="/contact"    element={<ContactPage />} />
