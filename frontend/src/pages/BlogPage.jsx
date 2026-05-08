@@ -38,6 +38,13 @@ const BlogPage = () => {
     return matchCat && matchSearch;
   });
 
+  // Helper — turns a relative /api/v1/media/files/... URL into an absolute URL
+  const getImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  };
+
   const formatDate = d => new Date(d).toLocaleDateString('en-ZA', { year:'numeric', month:'long', day:'numeric' });
 
   const featured = posts[0] || null;
@@ -66,8 +73,15 @@ const BlogPage = () => {
         <div style={{ maxWidth:1200, margin:'0 auto' }}>
           <span style={{ fontFamily:'Lato,sans-serif', fontSize:10, fontWeight:700, letterSpacing:'.22em', color:'#c9a84c', display:'block', marginBottom:20 }}>FEATURED</span>
           <div style={{ background:'#fff', borderRadius:14, overflow:'hidden', border:'1px solid rgba(0,0,0,.07)', display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))' }}>
-            <div style={{ background:'linear-gradient(135deg,#1a4731,#40916c)', minHeight:280, display:'flex', alignItems:'center', justifyContent:'center', padding:40 }}>
-              <span style={{ fontFamily:'Georgia,serif', fontSize:80, color:'rgba(255,255,255,.12)', fontStyle:'italic' }}>✝</span>
+            <div style={{ 
+              background: featured.featuredImageUrl 
+                ? `url(${featured.featuredImageUrl.startsWith('http') ? featured.featuredImageUrl : 'http://localhost:8080' + featured.featuredImageUrl}) center/cover no-repeat`
+                : 'linear-gradient(135deg,#1a4731,#40916c)', 
+              minHeight:280, display:'flex', alignItems:'center', justifyContent:'center', padding:40 
+            }}>
+              {!featured.featuredImageUrl && (
+                <span style={{ fontFamily:'Georgia,serif', fontSize:80, color:'rgba(255,255,255,.12)', fontStyle:'italic' }}>✝</span>
+              )}
             </div>
             <div style={{ padding:'36px 40px' }}>
               <span style={{ fontSize:10, fontWeight:700, letterSpacing:'.16em', padding:'4px 12px', borderRadius:3, background:CAT_STYLE[featured.category]?.bg, color:CAT_STYLE[featured.category]?.text }}>
@@ -128,10 +142,20 @@ const BlogPage = () => {
               {filtered.map((post, i) => (
                 <article key={post.postId} className="blog-card">
                   <div style={{ height:5, background:ACCENT[post.category]||'#1a4731' }} />
-                  <div style={{ height:160, background:i%3===0?'linear-gradient(135deg,#1a4731,#40916c)':i%3===1?'linear-gradient(135deg,#7d5b00,#c9a84c)':'linear-gradient(135deg,#256040,#3a7d56)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                    <span style={{ fontFamily:'Georgia,serif', fontSize:52, color:'rgba(255,255,255,.15)', fontStyle:'italic' }}>
-                      {post.category==='SERMON'?'✝':post.category==='ANNOUNCEMENT'?'✦':post.category==='TESTIMONY'?'❝':'◈'}
-                    </span>
+                  <div style={{ 
+                    height:160, 
+                    background: post.featuredImageUrl 
+                      ? `url(${getImageUrl(post.featuredImageUrl)}) center/cover no-repeat`
+                      : i%3===0 ? 'linear-gradient(135deg,#1a4731,#40916c)' 
+                      : i%3===1 ? 'linear-gradient(135deg,#7d5b00,#c9a84c)' 
+                      : 'linear-gradient(135deg,#256040,#3a7d56)',
+                    display:'flex', alignItems:'center', justifyContent:'center' 
+                  }}>
+                    {!post.featuredImageUrl && (
+                      <span style={{ fontFamily:'Georgia,serif', fontSize:52, color:'rgba(255,255,255,.15)', fontStyle:'italic' }}>
+                        {post.category==='SERMON'?'✝':post.category==='ANNOUNCEMENT'?'✦':post.category==='TESTIMONY'?'❝':'◈'}
+                      </span>
+                    )}
                   </div>
                   <div style={{ padding:'22px 24px 26px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
