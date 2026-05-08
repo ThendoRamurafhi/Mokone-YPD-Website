@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import blogService from '../../services/blogService';
+import mediaService from '../../services/mediaService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const EMPTY_POST = { title:'', excerpt:'', content:'', category:'GENERAL', status:'PUBLISHED', featuredImageUrl:'' };
@@ -77,6 +78,13 @@ const AdminBlog = () => {
     setShowPicker(false);
   };
 
+  // Helper — turns a relative /api/v1/media/files/... URL into an absolute URL
+  const getImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  };
+
   const inputStyle = { width:'100%', padding:'11px 14px', border:'1.5px solid rgba(26,71,49,.2)', borderRadius:6, fontSize:14, outline:'none', fontFamily:"'Lato',sans-serif", boxSizing:'border-box' };
   const labelStyle = { display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'#3d5247', marginBottom:7 };
 
@@ -120,7 +128,7 @@ const AdminBlog = () => {
                         onMouseLeave={e => { e.currentTarget.style.borderColor='transparent'; e.currentTarget.style.transform='translateY(0)'; }}
                       >
                         <img
-                          src={item.fileUrl}
+                          src={getImageUrl(item.fileUrl)}
                           alt={item.title}
                           style={{ width:'100%', height:110, objectFit:'cover', display:'block' }}
                           onError={e => { e.target.style.display='none'; }}
@@ -191,7 +199,7 @@ const AdminBlog = () => {
                 {form.featuredImageUrl && (
                   <div style={{ position:'relative', display:'inline-block', width:'100%' }}>
                     <img
-                      src={form.featuredImageUrl}
+                      src={getImageUrl(form.featuredImageUrl)}
                       alt="preview"
                       style={{ width:'100%', maxHeight:200, objectFit:'cover', borderRadius:8, border:'2px solid #c9a84c', display:'block' }}
                       onError={e => e.target.style.display='none'}
