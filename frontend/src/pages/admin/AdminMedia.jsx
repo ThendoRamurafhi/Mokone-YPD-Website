@@ -4,12 +4,13 @@ import mediaService from '../../services/mediaService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const AdminMedia = () => {
-  const [media, setMedia] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [filter, setFilter] = useState('ALL');
+  const [media, setMedia]           = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [uploading, setUploading]   = useState(false);
+  const [filter, setFilter]         = useState('ALL');
   const [uploadMode, setUploadMode] = useState('FILE'); // FILE or YOUTUBE
-  const [copiedId, setCopiedId] = useState(null); // tracks which card was just copied
+  const [copiedId, setCopiedId]     = useState(null); // tracks which card was just copied
+  const [authError,  setAuthError]  = useState(null); // surfaces 403 clearly
   
   const [form, setForm] = useState({
     title: '',
@@ -55,6 +56,7 @@ const AdminMedia = () => {
   
   const handleFileUpload = async (e) => {
     e.preventDefault();
+    setAuthError(null);
     const file = fileRef.current?.files[0];
     
     if (!file) {
@@ -87,7 +89,16 @@ const AdminMedia = () => {
       
       alert('File uploaded successfully!');
     } catch (error) {
-      alert(typeof error === 'string' ? error : 'Upload failed. Check file size and type.');
+      const msg = typeof err === 'string' ? err : 'Upload failed';
+      // Surface 403 with a helpful message
+      if (msg.toLowerCase().includes('access denied') || msg.includes('403')) {
+        setAuthError(
+          '⚠️ Upload blocked (403). Your account may not have ADMIN role. ' +
+          'Open browser console and run: JSON.parse(localStorage.getItem("user"))'
+        );
+      } else {
+        alert(msg);
+      }
     } finally {
       setUploading(false);
     }
@@ -164,6 +175,15 @@ const AdminMedia = () => {
       // Fallback for browsers that block clipboard
       prompt('Copy this URL:', item.fileUrl);
     });
+  };
+
+  // Add this helper at the top of AdminMedia.jsx and MediaPage.jsx
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    // If already full URL, return as-is
+    if (url.startsWith('http')) return url;
+    // If relative, prepend backend base URL
+    return `http://localhost:8080${url}`;
   };
 
   // ══════════════════════════════════════════════════════════════
@@ -339,7 +359,7 @@ const AdminMedia = () => {
                 {/* Thumbnail */}
                 <div style={{ height: 160, background: 'linear-gradient(135deg,#1a4731,#40916c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 50, position: 'relative', overflow: 'hidden' }}>
                   {item.mediaType === 'IMAGE' && item.fileUrl ? (
-                    <img src={item.fileUrl} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                    <img src={getImageUrl(item.fileUrl)} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
                   ) : item.isYoutubeVideo && item.youtubeThumbnail ? (
                     <img src={item.youtubeThumbnail} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
