@@ -1,14 +1,42 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ContactForm from '../components/contact/ContactForm';
+import prayerService from '../services/prayerService';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({ firstName:'', lastName:'', email:'', phone:'', message:'' });
-    const [sent, setSent] = useState(false);
-    const [prayerText, setPrayerText] = useState('');
-    const [prayerSent, setPrayerSent] = useState(false);
-  
-    const handleSubmit = e => { e.preventDefault(); if(formData.email && formData.message) setSent(true); };
+  const [sent, setSent] = useState(false);
+  const [prayerText, setPrayerText] = useState('');
+  const [prayerForm, setPrayerForm] = useState({ text: '', name: '', email: '' });
+  const [prayerSent, setPrayerSent] = useState(false);
+  const [prayerLoading, setPrayerLoading] = useState(false);
+  const [prayerError, setPrayerError] = useState(null);
+
+  // Add this function alongside handlePrayerSubmit (before the schedules array):
+  const handleSubmit = e => {
+    e.preventDefault();
+    if (formData.email && formData.message) setSent(true);
+  };
+
+  const handlePrayerSubmit = async () => {
+    if (!prayerForm.text.trim()) return;
+    setPrayerLoading(true);
+    setPrayerError(null);
+    try {
+      await prayerService.submit({
+        requestText:    prayerForm.text,
+        submitterName:  prayerForm.name  || null,
+        submitterEmail: prayerForm.email || null,
+        isAnonymous:    !prayerForm.name,          // anonymous if no name given
+        category:       'GENERAL',
+      });
+      setPrayerSent(true);
+    } catch (err) {
+      setPrayerError('Could not submit your request. Please try again.');
+    } finally {
+      setPrayerLoading(false);
+    }
+  };
 
   const schedules = [
     { day: 'Monday - Friday', hours: '08:00 - 17:00' },
@@ -169,12 +197,34 @@ const ContactPage = () => {
             </div>
           ) : (
             <div style={{ background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.12)', borderRadius:12, padding:'32px' }}>
-              <textarea rows={4} placeholder="Share your prayer request here..." value={prayerText} onChange={e=>setPrayerText(e.target.value)}
-                style={{ width:'100%', padding:'14px', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:6, color:'#fff', fontSize:14, outline:'none', resize:'vertical', fontFamily:"'Lato',sans-serif", boxSizing:'border-box', marginBottom:16 }} />
-              <input placeholder="Your Name" style={{ width:'100%', padding:'12px 14px', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:6, color:'#fff', fontSize:14, outline:'none', fontFamily:"'Lato',sans-serif", boxSizing:'border-box', marginBottom:14 }} />
-              <button onClick={()=>prayerText && setPrayerSent(true)}
-                style={{ width:'100%', background:'#c9a84c', color:'#0d2b1a', border:'none', padding:'14px', borderRadius:6, fontFamily:'Lato,sans-serif', fontSize:13, fontWeight:700, cursor:'pointer', letterSpacing:'.08em' }}>
-                Send Prayer Request
+              <textarea
+                rows={4}
+                placeholder="Share your prayer request here..."
+                value={prayerForm.text}
+                onChange={e => setPrayerForm({ ...prayerForm, text: e.target.value })}
+                style={{ width:'100%', padding:'14px', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:6, color:'#fff', fontSize:14, outline:'none', resize:'vertical', fontFamily:"'Lato',sans-serif", boxSizing:'border-box', marginBottom:16 }}
+              />
+              <input
+                placeholder="Your Name (leave blank to stay anonymous)"
+                value={prayerForm.name}
+                onChange={e => setPrayerForm({ ...prayerForm, name: e.target.value })}
+                style={{ width:'100%', padding:'12px 14px', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:6, color:'#fff', fontSize:14, outline:'none', fontFamily:"'Lato',sans-serif", boxSizing:'border-box', marginBottom:10 }}
+              />
+              <input
+                type="email"
+                placeholder="Email (optional — for confirmation)"
+                value={prayerForm.email}
+                onChange={e => setPrayerForm({ ...prayerForm, email: e.target.value })}
+                style={{ width:'100%', padding:'12px 14px', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:6, color:'#fff', fontSize:14, outline:'none', fontFamily:"'Lato',sans-serif", boxSizing:'border-box', marginBottom:14 }}
+              />
+              {prayerError && (
+                <p style={{ color:'#f88', fontSize:13, marginBottom:10 }}>{prayerError}</p>
+              )}
+              <button
+                onClick={handlePrayerSubmit}
+                disabled={prayerLoading}
+                style={{ width:'100%', background: prayerLoading ? '#888' : '#c9a84c', color:'#0d2b1a', border:'none', padding:'14px', borderRadius:6, fontFamily:'Lato,sans-serif', fontSize:13, fontWeight:700, cursor: prayerLoading ? 'not-allowed' : 'pointer', letterSpacing:'.08em' }}>
+                {prayerLoading ? 'Sending...' : 'Send Prayer Request'}
               </button>
             </div>
           )}
