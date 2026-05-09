@@ -11,6 +11,14 @@ const chargeService = {
   // GET /api/v1/charges/map  (lat/lng only, for map markers)
   getMapMarkers: () => api.get('/charges/map'),
 
+   // GET /api/v1/charges/district/:district
+  getByDistrict: (district) =>
+    api.get(`/charges/district/${district}`),
+
+  // GET /api/v1/charges/districts — list of all districts for the filter pills
+  getDistricts: () =>
+    api.get('/charges/districts'),
+
   // POST /api/v1/charges  (ADMIN only)
   create: (data) => api.post('/charges', data),
 
