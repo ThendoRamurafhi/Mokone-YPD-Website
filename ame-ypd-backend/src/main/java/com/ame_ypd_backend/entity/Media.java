@@ -35,7 +35,9 @@ public class Media {
     @Enumerated(EnumType.STRING)
     private MediaCategory category = MediaCategory.GENERAL;
 
+   
     @Enumerated(EnumType.STRING)
+    @Column(name = "`usage`")
     private MediaUsage usage = MediaUsage.GALLERY;  // NEW: Where this media is used
 
     private String title;
