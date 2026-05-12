@@ -148,7 +148,7 @@ const AboutPage = () => {
             <p style={{ fontFamily:'Georgia,serif', fontStyle:'italic', fontSize:17, color:'var(--gm)', marginBottom:28 }}>
               "Iron sharpens iron, and one person sharpens another." — Proverbs 27:17
             </p>
-            <Link to="/contact" className="btn-gold" style={{ marginRight:12 }}>Learn More</Link>
+            <Link to="/contact" className="btn-gold" style={{ margin:12 }}>Learn More</Link>
             <Link to="/events" className="btn-outline">Upcoming Events</Link>
           </div>
         </div>
