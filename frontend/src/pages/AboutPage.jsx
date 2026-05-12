@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import leadershipService from '../services/leadershipService';
+import mediaService from '../services/mediaService';
 
 /* ─── Shared styles injected once ─── */
 const PageStyles = () => (
@@ -28,16 +30,38 @@ const PageStyles = () => (
     .btn-gold:hover { background:var(--gold2); }
     .btn-outline { border:1.5px solid var(--gm); color:var(--gm); padding:13px 32px; border-radius:5px; font-family:'Lato',sans-serif; font-size:12px; font-weight:700; letter-spacing:.1em; cursor:pointer; text-decoration:none; display:inline-block; transition:all .2s; background:transparent; }
     .btn-outline:hover { background:var(--gm); color:#fff; }
+    .leader-card{background:#fff;border:1px solid rgba(26,71,49,.1);border-radius:14px;padding:28px 22px;transition:all .3s;display:flex;gap:18px;align-items:flex-start;}
+    .leader-card:hover{box-shadow:0 12px 32px rgba(26,71,49,.1);transform:translateY(-3px);}
   `}</style>
 );
 
+// Fallback mosaic tiles when no media images are uploaded yet
+const JOURNEY_FALLBACKS = [
+  { bg: 'linear-gradient(135deg,#1a4731,#40916c)', label: 'Worship' },
+  { bg: 'linear-gradient(135deg,#0d2b1a,#256040)', label: 'Fellowship' },
+  { bg: 'linear-gradient(135deg,#7d5b00,#c9a84c)', label: 'Youth' },
+  { bg: 'linear-gradient(135deg,#256040,#3a7d56)', label: 'Service' },
+];
+
 const AboutPage = () => {
-  const leaders = [
-    { initials:'JD', name:'Rev. John Doe',      role:'Presiding Elder',  desc:'Leading our community with wisdom and grace for over 20 years.' },
-    { initials:'JS', name:'Pastor Jane Smith',   role:'YPD Director',     desc:'Passionate about empowering youth to reach their full potential.' },
-    { initials:'MB', name:'Deacon Michael Brown',role:'Youth Pastor',     desc:'Dedicated to nurturing spiritual growth in our young members.' },
-    { initials:'SR', name:'Sister Ruth Ndlovu',  role:'Women\'s Ministry', desc:'Championing women in faith and leadership across all areas.' },
-  ];
+  const [leaders,       setLeaders]       = useState([]);
+  const [journeyImages, setJourneyImages] = useState([]); // "Journey of Faith" mosaic
+  const [formData, setFormData] = useState({ firstName:'', lastName:'', email:'', phone:'', message:'' });
+  const [sent, setSent] = useState(false);
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  useEffect(() => {
+    // Load leaders for About page
+    leadershipService.getForAbout()
+      .then(data => setLeaders(Array.isArray(data) ? data : []))
+      .catch(() => setLeaders([]));
+
+    // Load "Journey of Faith" mosaic images (usage = ABOUT_JOURNEY)
+    mediaService.getByUsage('ABOUT_JOURNEY')
+      .then(data => setJourneyImages(Array.isArray(data) ? data.slice(0, 4) : []))
+      .catch(() => setJourneyImages([]));
+  }, []);
 
   const values = [
     { icon:'✝', title:'Faith',     desc:'Rooted in the teachings of Jesus Christ and the Methodist tradition.' },
@@ -56,9 +80,19 @@ const AboutPage = () => {
     { year:'2024', event:'Launched digital ministry and this online platform.' },
   ];
 
-  const [formData, setFormData] = useState({ firstName:'', lastName:'', email:'', phone:'', message:'' });
-  const [sent, setSent] = useState(false);
+  const orgLevels = [
+    { level: '01', title: 'Presiding Elder',          bg: '#3b0350' },
+    { level: '02', title: 'Ordained Ministers',        bg: '#099bea' },
+    { level: '03', title: 'YPD Directors & Officers',  bg: '#0d2b1a' },
+    { level: '04', title: 'Area Church YPD Leaders',   bg: '#eaf608' },
+  ];
+
   const handleSubmit = e => { e.preventDefault(); if (formData.email && formData.message) setSent(true); };
+
+  // Build the Journey mosaic: use real images if available, else fallbacks
+  const mosaicTiles = journeyImages.length > 0
+    ? journeyImages.map(img => ({ src: img.fileUrl, label: img.title || '' }))
+    : JOURNEY_FALLBACKS.map(f => ({ src: null, bg: f.bg, label: f.label }));
 
   return (
     <div style={{ fontFamily:"'Lato',sans-serif", paddingTop:64 }}>
@@ -71,7 +105,7 @@ const AboutPage = () => {
           Empowering our community<br />
           <span style={{ color:'var(--gold)', fontStyle:'italic' }}>through faith and unity</span>
         </h1>
-        <p className="page-subtitle">
+        <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 15, color: 'rgba(255,255,255,.6)', maxWidth: 520, margin: '0 auto', lineHeight: 1.8 }}>
           We strive to provide a welcoming space for worship and growth,
           encouraging faith-driven lives across the Mokone YPD Conference.
         </p>
@@ -85,14 +119,21 @@ const AboutPage = () => {
         <div className="inner grid-2">
           {/* Photo mosaic */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'180px 180px', gap:12 }}>
-            {[
-              { bg:'linear-gradient(135deg,#1a4731,#40916c)', label:'Worship' },
-              { bg:'linear-gradient(135deg,#0d2b1a,#256040)', label:'Fellowship' },
-              { bg:'linear-gradient(135deg,#7d5b00,#c9a84c)', label:'Youth' },
-              { bg:'linear-gradient(135deg,#256040,#3a7d56)', label:'Service' },
-            ].map((b,i) => (
-              <div key={i} style={{ background:b.bg, borderRadius:10, display:'flex', alignItems:'flex-end', padding:14 }}>
-                <span style={{ fontFamily:'Georgia,serif', fontSize:13, color:'rgba(255,255,255,.6)', fontStyle:'italic' }}>{b.label}</span>
+           {(mosaicTiles.length < 4 ? [...mosaicTiles, ...JOURNEY_FALLBACKS.slice(mosaicTiles.length)] : mosaicTiles).slice(0, 4).map((tile, i) => (
+              <div key={i} style={{
+                borderRadius: 10,
+                overflow: 'hidden',
+                background: tile.src ? '#000' : (tile.bg || 'linear-gradient(135deg,#1a4731,#40916c)'),
+                backgroundImage: tile.src ? `url(${tile.src})` : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                display: 'flex', alignItems: 'flex-end', padding: 14,
+                position: 'relative',
+              }}>
+                {tile.src && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 60%)' }} />}
+                <span style={{ fontFamily: 'Georgia,serif', fontSize: 13, color: 'rgba(255,255,255,.8)', fontStyle: 'italic', position: 'relative', zIndex: 1 }}>
+                  {tile.label}
+                </span>
               </div>
             ))}
           </div>
@@ -168,16 +209,25 @@ const AboutPage = () => {
               </p>
               <Link to="/contact" className="btn-gold">Meet Us</Link>
             </div>
+
             <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-              {leaders.map((l,i) => (
-                <div key={i} style={{ display:'flex', gap:16, background:'#fff', border:'1px solid rgba(0,0,0,.07)', borderRadius:10, padding:'20px 22px', alignItems:'flex-start' }}>
-                  <div style={{ width:52, height:52, borderRadius:'50%', background:'var(--gk)', border:'2px solid var(--gold)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--gold)', fontFamily:'Georgia,serif', fontWeight:700, fontSize:14, flexShrink:0 }}>
-                    {l.initials}
+              {leaders.length === 0 ? (
+                <p style={{ color: 'var(--tl)', fontSize: 14 }}>
+                  No leaders added yet. Go to Admin → Leadership to add your team.
+                </p>
+              ) : leaders.map(l => (
+                <div key={l.leaderId} className="leader-card">
+                  {/* Photo or initials fallback */}
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--gk)', border: '2px solid var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)', fontFamily: 'Georgia,serif', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>
+                    {l.photoUrl ? (
+                      <img src={l.photoUrl} alt={l.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (l.initials || l.name.split(' ').map(w => w[0]).join('').slice(0, 2))}
                   </div>
                   <div>
-                    <div style={{ fontFamily:'Georgia,serif', fontWeight:700, fontSize:16, color:'var(--td)', marginBottom:2 }}>{l.name}</div>
-                    <div style={{ fontSize:11, color:'var(--gold)', letterSpacing:'.1em', marginBottom:6, fontFamily:'Lato,sans-serif' }}>{l.role}</div>
-                    <p style={{ fontSize:13, color:'var(--tl)', lineHeight:1.6 }}>{l.desc}</p>
+                    <div style={{ fontFamily: 'Georgia,serif', fontWeight: 700, fontSize: 16, color: 'var(--td)', marginBottom: 2 }}>{l.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--gold)', letterSpacing: '.1em', marginBottom: 6, fontFamily: "'Lato',sans-serif", fontWeight: 700 }}>{l.role}</div>
+                    {l.description && <p style={{ fontSize: 13, color: 'var(--tl)', lineHeight: 1.6 }}>{l.description}</p>}
                   </div>
                 </div>
               ))}
@@ -244,12 +294,7 @@ const AboutPage = () => {
             Conference Structure
           </h2>
           <div style={{ maxWidth:640, margin:'0 auto' }}>
-            {[
-              { level:'01', title:'Presiding Elder',          color:'var(--gk)' },
-              { level:'02', title:'Ordained Ministers',       color:'var(--gm)' },
-              { level:'03', title:'YPD Directors & Officers', color:'var(--gs)' },
-              { level:'04', title:'Area Church YPD Leaders',  color:'var(--gl)' },
-            ].map((item,i) => (
+            {orgLevels.map((item,i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:16, marginBottom:12 }}>
                 <div style={{ width:44, height:44, borderRadius:'50%', background:item.color, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--gold)', fontFamily:'Georgia,serif', fontSize:12, fontWeight:700, flexShrink:0 }}>
                   {item.level}
@@ -284,7 +329,7 @@ const AboutPage = () => {
           ) : (
             <form onSubmit={handleSubmit} style={{ background:'#fff', borderRadius:12, padding:'36px 32px', border:'1px solid rgba(0,0,0,.06)' }}>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
-                {[['firstName','First name','John'],['lastName','Last name','Doe']].map(([k,l,ph]) => (
+                {[['firstName','First name','Thendo'],['lastName','Last name','Ramurafhi']].map(([k,l,ph]) => (
                   <div key={k}>
                     <label style={{ display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'var(--tm)', marginBottom:7 }}>{l.toUpperCase()}</label>
                     <input placeholder={ph} value={formData[k]} onChange={e=>setFormData({...formData,[k]:e.target.value})}
@@ -292,7 +337,7 @@ const AboutPage = () => {
                   </div>
                 ))}
               </div>
-              {[['email','Email *','john@example.com','email'],['phone','Phone','+ 27 12 345 6789','tel']].map(([k,l,ph,t]) => (
+              {[['email','Email *','thendo@example.com','email'],['phone','Phone','+ 27 12 345 6789','tel']].map(([k,l,ph,t]) => (
                 <div key={k} style={{ marginBottom:16 }}>
                   <label style={{ display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'var(--tm)', marginBottom:7 }}>{l.toUpperCase()}</label>
                   <input type={t} required={k==='email'} placeholder={ph} value={formData[k]} onChange={e=>setFormData({...formData,[k]:e.target.value})}
