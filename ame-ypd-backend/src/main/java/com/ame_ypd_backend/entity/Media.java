@@ -76,13 +76,33 @@ public class Media {
     }
 
     public enum MediaUsage {
-        GALLERY,        // Public media gallery
-        BLOG_FEATURED,  // Featured blog image
-        BLOG_INLINE,    // Inline blog content
-        HERO_SECTION,   // Homepage hero
-        LEADERSHIP_PROFILE, // Leader headshots
-        EVENT_COVER,    // Event featured image
-        PAGE_HEADER,    // Page header backgrounds
-        GENERAL         // General use
+        
+        // ── General / Gallery ──
+        GALLERY,                // Public /media gallery page
+
+        // ── Blog ──
+        BLOG_FEATURED,          // Blog post cover image
+        BLOG_INLINE,            // Inline image inside blog content
+
+        // ── Home page ──
+        HOME_HERO,              // Home page hero banner (1 image shown)
+        HOME_STAY_INFORMED,     // Home "Stay Informed" 4-photo mosaic
+
+        // ── About page ──
+        ABOUT_JOURNEY,          // About "Journey of Faith" 4-photo mosaic
+        LEADERSHIP_PROFILE,     // About "Guiding Principles" leader headshots
+
+        // ── Structure page ──
+        STRUCTURE_LEADER,       // Structure "Our Leadership" member headshots
+
+        // ── Events ──
+        EVENT_COVER,            // Event featured image
+
+        // ── Sermon / Media page ──
+        HERO_SECTION,           // Generic hero (kept for backwards compat)
+        PAGE_HEADER,            // Page header backgrounds
+
+        // ── Fallback ──
+        GENERAL                 // Multi-purpose / not yet assigned
     }
 }
