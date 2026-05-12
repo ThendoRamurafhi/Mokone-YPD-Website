@@ -275,8 +275,10 @@ const AdminMedia = () => {
                     <option value="BLOG_FEATURED">Blog Featured</option>
                     <option value="BLOG_INLINE">Blog Inline</option>
                     <option value="HERO_SECTION">Hero Section</option>
+                    <option value="HOME_STAY_INFORMED">Home - Stay Informed</option>
                     <option value="LEADERSHIP_PROFILE">Leadership Profile</option>
                     <option value="EVENT_COVER">Event Cover</option>
+                    <option value="ABOUT_JOURNEY">About - Journey</option>
                     <option value="PAGE_HEADER">Page Header</option>
                     <option value="GENERAL">General</option>
                   </select>
