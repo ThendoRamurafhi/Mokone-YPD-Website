@@ -59,3 +59,7 @@ build/
 
 ### env files ###
 .env
+
+###Super admin credentials - NEVER push this file###
+application-local.properties
+.gitignore
