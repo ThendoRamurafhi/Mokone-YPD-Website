@@ -85,6 +85,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/events/rsvp/*/cancel").authenticated()
                 .requestMatchers(HttpMethod.POST, "/prayers/*/pray").authenticated()
 
+                // Add these rules BEFORE the existing admin rules
+                .requestMatchers(HttpMethod.PUT, "/auth/promote/**").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/auth/demote/**").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("SUPER_ADMIN")
+
                 // ── ADMIN only ────────────────────────────────────────
                 .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/events/**").hasRole("ADMIN")
