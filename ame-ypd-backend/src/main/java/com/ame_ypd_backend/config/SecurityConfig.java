@@ -89,34 +89,33 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/auth/promote/**").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/auth/demote/**").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("SUPER_ADMIN")
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                 // ── ADMIN only ────────────────────────────────────────
-                .requestMatchers(HttpMethod.POST, "/events/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/events/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/events/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/events/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/events/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/events/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                .requestMatchers(HttpMethod.POST, "/blog/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/blog/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/blog/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/blog/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/blog/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/blog/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                .requestMatchers(HttpMethod.POST, "/charges/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/charges/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/charges/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/charges/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/charges/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/charges/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                // trying to fix the problem that i have when uploading files
-                .requestMatchers(HttpMethod.POST, "/media/upload").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/media/youtube").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/media/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/media/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/media/upload").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/media/youtube").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/media/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/media/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                .requestMatchers(HttpMethod.GET, "/prayers/pending").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/prayers/*/approve").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/prayers/*/reject").hasRole("ADMIN")
-                
-                .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/users/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/auth/promote/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/prayers/pending").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/prayers/*/approve").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/prayers/*/reject").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/auth/promote/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                 .anyRequest().authenticated()
             )
