@@ -49,7 +49,11 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = useCallback(() => !!user, [user]);
   const hasRole         = useCallback((role) => user?.role === role, [user]);
-  const isAdmin         = useCallback(() => user?.role === 'ADMIN', [user]);
+  const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN', 'SUPERADMIN'];
+    const isAdmin = useCallback(
+      () => ADMIN_ROLES.includes(user?.role),
+      [user]
+    );
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated, hasRole, isAdmin }}>
