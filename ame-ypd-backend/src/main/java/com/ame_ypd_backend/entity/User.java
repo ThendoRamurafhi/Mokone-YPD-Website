@@ -45,6 +45,7 @@ public class User {
     }
 
     public enum Role {
+        SUPER_ADMIN,   // Full access — can create/edit/delete everything
         ADMIN,   // Full access — can create/edit/delete everything
         MEMBER,  // Logged in church member
         GUEST    // Public visitor
