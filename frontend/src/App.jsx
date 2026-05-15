@@ -28,6 +28,7 @@ const AdminMedia     = React.lazy(() => import('./pages/admin/AdminMedia'));
 const AdminCharges   = React.lazy(() => import('./pages/admin/AdminCharges'));
 const AdminUsers     = React.lazy(() => import('./pages/admin/AdminUsers'));
 const AdminPrayers   = React.lazy(() => import('./pages/admin/AdminPrayers'));
+const AdminLeadership = React.lazy(() => import('./pages/admin/AdminLeadership'));
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
             <Route path="/admin/charges/new" element={<AdminRoute><AdminCharges /></AdminRoute>} />
             <Route path="/admin/users"    element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="/admin/prayers"  element={<AdminRoute><AdminPrayers /></AdminRoute>} />
+            <Route path="/admin/leadership"   element={<AdminRoute><AdminLeadership /></AdminRoute>} />
 
             {/* ── PUBLIC ROUTES (with nav + footer) ───────────────────── */}
             <Route path="*" element={
