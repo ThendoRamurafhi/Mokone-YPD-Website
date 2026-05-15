@@ -37,7 +37,7 @@ public class MediaService {
     private static final List<String> ALLOWED_DOC_TYPES = List.of(
         "application/pdf"
     );
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
     // ══════════════════════════════════════════════════════════════
     // UPLOAD FILE (LOCAL STORAGE)
@@ -50,7 +50,7 @@ public class MediaService {
             Media.MediaCategory category,
             Media.MediaUsage usage) throws IOException {
 
-        // ── Validation ──
+        // ── Validation ── 
         validateFile(file);
  
         // ── Generate safe filename ──
@@ -213,7 +213,7 @@ public class MediaService {
         }
  
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new RuntimeException("File size exceeds 10MB limit");
+            throw new RuntimeException("File size exceeds 50MB limit");
         }
  
         String contentType = file.getContentType();
