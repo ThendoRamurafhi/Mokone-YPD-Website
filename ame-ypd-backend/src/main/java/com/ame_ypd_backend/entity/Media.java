@@ -85,7 +85,7 @@ public class Media {
         BLOG_INLINE,            // Inline image inside blog content
 
         // ── Home page ──
-        HOME_HERO,              // Home page hero banner (1 image shown)
+        //HOME_HERO,              // Home page hero banner (1 image shown)
         HOME_STAY_INFORMED,     // Home "Stay Informed" 4-photo mosaic
 
         // ── About page ──
