@@ -4,7 +4,16 @@ import { NavIcons } from '../components/common/NavIcons';
 import YPDLogo from '../components/common/YPDLogo';
 import eventService from '../services/eventService';
 import blogService from '../services/blogService';
+import mediaService from '../services/mediaService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import api, { buildMediaUrl } from '../services/api';
+
+const STAY_INFORMED_FALLBACKS = [
+  { bg:'linear-gradient(135deg,#1a4731,#40916c)', label:'Conference' },
+  { bg:'linear-gradient(135deg,#0d2b1a,#1a4731)', label:'Worship'    },
+  { bg:'linear-gradient(135deg,#7d5b00,#c9a84c)', label:'Youth'      },
+  { bg:'linear-gradient(135deg,#256040,#3a7d56)', label:'Outreach'   },
+];
 
 const HomePage = () => {
 
@@ -13,10 +22,10 @@ const HomePage = () => {
 
   /* ── data ── */
   const TESTIMONIALS = [
-    { name:'Ledile Kgopong',         role:'Church Member',              avatar:'LK',  quote:"A welcoming community that truly feels like family. I've never felt so at home in a church before." },
-    { name:'Neo Mannya',             role:'YPD Conference President',   avatar:'NM',  quote:'Exceptional sermons that challenge my faith in the most beautiful way. Deeply transformative.' },
-    { name:'Thendo Ramurafhi',       role:'New Member',                 avatar:'TR',  quote:"I've found my spiritual home here. The YPD has helped me grow in ways I never imagined possible." },
-    { name:'Rev. MA Monyemorathwe', role:'Sibasa Circuit Local Pastor', avatar:'MAM', quote:'An inspiring experience every single time I attend. The spirit of this community is extraordinary.' },
+    { name:'Ledile Kgopong',         role:'Church Member',               avatar:'LK',  quote:"A welcoming community that truly feels like family. I've never felt so at home in a church before." },
+    { name:'Neo Mannya',             role:'YPD Conference President',    avatar:'NM',  quote:'Exceptional sermons that challenge my faith in the most beautiful way. Deeply transformative.' },
+    { name:'Thendo Ramurafhi',       role:'New Member',                  avatar:'TR',  quote:"I've found my spiritual home here. The YPD has helped me grow in ways I never imagined possible." },
+    { name:'Rev. MA Monyemorathwe',  role:'Sibasa Circuit Local Pastor', avatar:'MAM', quote:'An inspiring experience every single time I attend. The spirit of this community is extraordinary.' },
   ];
 
   const categoryColors = {
@@ -57,6 +66,7 @@ const HomePage = () => {
   const [featuredVideo,   setFeaturedVideo]   = useState(null);  // YouTube video from Media
   const [heroImages,      setHeroImages]      = useState([]);    // Hero images from Media
   const [stayInformedEvs, setStayInformedEvs] = useState([]);    // Events for STAY INFORMED
+  const [stayInformedImages,setStayInformedImages]= useState([]);
   const [loading,        setLoading]        = useState(true);
   const [error,          setError]          = useState(null);
 
@@ -126,6 +136,12 @@ const HomePage = () => {
         const updatesResponse = await blogService.getAll({ category: 'ANNOUNCEMENT', page: 0, size: 4 });
         setUpdates(updatesResponse.content || updatesResponse || []);
 
+        // ── Stay Informed mosaic — upload images with usage=HOME_STAY_INFORMED ──
+        try {
+          const siMedia = await mediaService.getByUsage('HOME_STAY_INFORMED');
+          setStayInformedImages((Array.isArray(siMedia) ? siMedia : []).filter(m => m.mediaType === 'IMAGE').slice(0, 4));
+        } catch { /* no stay informed images yet */ }
+
       } catch (err) {
         console.error('Error fetching home data:', err);
         setError('Failed to load content. Please try again later.');
@@ -135,6 +151,16 @@ const HomePage = () => {
     };
     fetchHomeData();
   }, []);
+
+  const realTiles = stayInformedImages
+  .slice(0, 4)
+  .map(img => ({ src: buildMediaUrl(img.fileUrl), label: img.title || '' }));
+
+  // Build the Stay Informed mosaic tiles — real images + gradient fallbacks
+  const stayInformedTiles = [
+    ...realTiles,
+    ...STAY_INFORMED_FALLBACKS.slice(stayInformedImages.length),
+  ].slice(0, 4);
 
   return (
     <div style={{ fontFamily:"'Lato',sans-serif" }}>
@@ -507,18 +533,35 @@ const HomePage = () => {
       <section id="updates" style={{ background: 'var(--white)', padding: '100px 24px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))', gap: 64, alignItems: 'center' }}>
-            {/* Event images mosaic — pulls from media EVENTS category */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '200px 200px', gap: 12 }}>
-              {[
-                { bg: 'linear-gradient(135deg,#1a4731,#40916c)', label: 'Conference' },
-                { bg: 'linear-gradient(135deg,#0d2b1a,#1a4731)', label: 'Worship' },
-                { bg: 'linear-gradient(135deg,#7d5b00,#c9a84c)', label: 'Youth' },
-                { bg: 'linear-gradient(135deg,#256040,#3a7d56)', label: 'Outreach' },
-              ].map((b, i) => (
-                <div key={i} style={{ background: b.bg, borderRadius: 8, display: 'flex', alignItems: 'flex-end', padding: 16 }}>
-                  <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, color: 'rgba(255,255,255,.65)', fontStyle: 'italic' }}>{b.label}</span>
+            
+            {/* 4-photo mosaic — upload images with Usage = "Home - Stay Informed" */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'200px 200px', gap:12,  alignSelf: 'stretch',  minHeight: 412 }}>
+              {stayInformedTiles.map((tile, i) => (
+                <div key={i} style={{
+                  borderRadius:8,
+                  overflow:'hidden',
+                  background: tile.src ? '#000' : (tile.bg || 'linear-gradient(135deg,#1a4731,#40916c)'),
+                  position:'relative',
+                  height: '100%',
+                }}>
+                  {tile.src && (
+                    <img 
+                      src={tile.src} 
+                      alt={tile.label}
+                      style={{ 
+                        position: 'absolute', inset: 0,
+                        width: '100%', height: '100%', 
+                        objectFit: 'cover',
+                      }} 
+                    />
+                  )}
+                  <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 60%)' }} />
+                  <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, color:'rgba(255,255,255,.8)', fontStyle:'italic', position:'relative', zIndex:1 }}>
+                    {tile.label}
+                  </span>
                 </div>
               ))}
+              
             </div>
 
             {/* Text + event list */}
