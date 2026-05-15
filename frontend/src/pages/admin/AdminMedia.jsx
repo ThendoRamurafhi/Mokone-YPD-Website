@@ -89,7 +89,7 @@ const AdminMedia = () => {
       
       alert('File uploaded successfully!');
     } catch (error) {
-      const msg = typeof err === 'string' ? err : 'Upload failed';
+      const msg = typeof error === 'string' ? error : 'Upload failed';
       // Surface 403 with a helpful message
       if (msg.toLowerCase().includes('access denied') || msg.includes('403')) {
         setAuthError(
