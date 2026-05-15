@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import leadershipService from '../services/leadershipService';
 import mediaService from '../services/mediaService';
+import api, { buildMediaUrl } from '../services/api';
 
 /* ─── Shared styles injected once ─── */
 const PageStyles = () => (
@@ -90,9 +91,22 @@ const AboutPage = () => {
   const handleSubmit = e => { e.preventDefault(); if (formData.email && formData.message) setSent(true); };
 
   // Build the Journey mosaic: use real images if available, else fallbacks
-  const mosaicTiles = journeyImages.length > 0
-    ? journeyImages.map(img => ({ src: img.fileUrl, label: img.title || '' }))
-    : JOURNEY_FALLBACKS.map(f => ({ src: null, bg: f.bg, label: f.label }));
+  // const mosaicTiles = journeyImages.length > 0
+  //   ? journeyImages.map(img => ({ src: img.fileUrl, label: img.title || '' }))
+  //   : JOURNEY_FALLBACKS.map(f => ({ src: null, bg: f.bg, label: f.label }));
+
+  const mosaicTiles = (() => {
+    const real = journeyImages
+      .slice(0, 4)
+      .map(img => ({
+        src: buildMediaUrl(img.fileUrl),  // ← only change this line
+        label: img.title || '',
+      }));
+    return [
+      ...real,
+      ...JOURNEY_FALLBACKS.slice(real.length).map(f => ({ src: null, bg: f.bg, label: f.label })),
+    ].slice(0, 4);
+  })();
 
   return (
     <div style={{ fontFamily:"'Lato',sans-serif", paddingTop:64 }}>
@@ -118,24 +132,36 @@ const AboutPage = () => {
       <section className="section section-white">
         <div className="inner grid-2">
           {/* Photo mosaic */}
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'180px 180px', gap:12 }}>
-           {(mosaicTiles.length < 4 ? [...mosaicTiles, ...JOURNEY_FALLBACKS.slice(mosaicTiles.length)] : mosaicTiles).slice(0, 4).map((tile, i) => (
-              <div key={i} style={{
-                borderRadius: 10,
-                overflow: 'hidden',
-                background: tile.src ? '#000' : (tile.bg || 'linear-gradient(135deg,#1a4731,#40916c)'),
-                backgroundImage: tile.src ? `url(${tile.src})` : undefined,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                display: 'flex', alignItems: 'flex-end', padding: 14,
-                position: 'relative',
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'180px 180px', gap:12, alignSelf: 'stretch', minHeight: 412 }}>
+           {mosaicTiles.map((tile, i) => (
+            <div key={i} style={{
+              borderRadius: 8,
+              overflow: 'hidden',
+              background: tile.bg || 'linear-gradient(135deg,#1a4731,#40916c)',
+              position: 'relative',
+              height: '100%',       // ← ADD THIS
+            }}>
+              {tile.src && (
+                <img 
+                  src={tile.src} 
+                  alt={tile.label}
+                  style={{ 
+                    position: 'absolute', inset: 0,
+                    width: '100%', height: '100%', 
+                    objectFit: 'cover',
+                  }} 
+                />
+              )}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 60%)' }} />
+              <span style={{ 
+                position: 'absolute', bottom: 14, left: 14,
+                fontFamily: 'Georgia,serif', fontSize: 13, 
+                color: 'rgba(255,255,255,.8)', fontStyle: 'italic',
               }}>
-                {tile.src && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 60%)' }} />}
-                <span style={{ fontFamily: 'Georgia,serif', fontSize: 13, color: 'rgba(255,255,255,.8)', fontStyle: 'italic', position: 'relative', zIndex: 1 }}>
-                  {tile.label}
-                </span>
-              </div>
-            ))}
+                {tile.label}
+              </span>
+            </div>
+          ))}
           </div>
           <div>
             <span className="eyebrow">A JOURNEY OF FAITH</span>
