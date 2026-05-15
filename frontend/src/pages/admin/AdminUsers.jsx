@@ -50,7 +50,7 @@ const AdminUsers = () => {
           {ROLES.map(r=>(
             <button key={r} onClick={()=>setFilter(r)} 
             style={{ padding:'9px 16px', borderRadius:20, border:'1px solid rgba(26,71,49,.2)', background:filter===r?'#1a4731':'#fff', color:filter===r?'#fff':'#3d5247', fontFamily:"'Lato',sans-serif", fontSize:12, cursor:'pointer', transition:'all .2s' }}>
-              {r === 'SUPER_ADMIN' ? '⭐ SUPER' : r}</button>
+              {r === 'SUPER_ADMIN' ? 'SUPER ADMIN' : r}</button>
           ))}
         </div>
       </div>
@@ -73,7 +73,7 @@ const AdminUsers = () => {
                       <div>
                         <div style={{ fontWeight:600, color:'#0d2b1a' }}>
                           {u.firstName} {u.lastName}
-                          {u.role === 'SUPER_ADMIN' && ' ⭐'}
+                          {u.role === 'SUPER_ADMIN' }
                         </div>
                         <div style={{ fontSize:12, color:'#aaa' }}>@{u.username}</div>
                       </div>
@@ -87,11 +87,11 @@ const AdminUsers = () => {
                         display:'inline-block',
                         fontSize:11, fontWeight:700, letterSpacing:'.1em',
                         padding:'4px 12px', borderRadius:20,
-                        background: ROLE_STYLE.SUPER_ADMIN.bg,
-                        color: ROLE_STYLE.SUPER_ADMIN.text,
-                        border: ROLE_STYLE.SUPER_ADMIN.border,
+                        background: ROLE_COLOR.SUPER_ADMIN.bg,
+                        color: ROLE_COLOR.SUPER_ADMIN.text,
+                        border: ROLE_COLOR.SUPER_ADMIN.border,
                       }}>
-                        SUPER ADMIN ⭐
+                        SUPER ADMIN
                       </span>
                     ) : (
                       <select
@@ -100,7 +100,7 @@ const AdminUsers = () => {
                         style={{
                           padding:'5px 10px', borderRadius:5,
                           border:'1px solid rgba(0,0,0,.15)', fontSize:12,
-                          color: ROLE_STYLE[u.role]?.text || '#555',
+                          color: ROLE_COLOR[u.role]?.text || '#555',
                           background:'#fff', cursor:'pointer',
                           fontFamily:"'Lato',sans-serif",
                         }}>
