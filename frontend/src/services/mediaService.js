@@ -23,20 +23,29 @@ const mediaService = {
   // ══════════════════════════════════════════════════════════════
   
   saveYoutubeVideo: async (data) => {
-    try {
-      const params = new URLSearchParams();
-      params.append('youtubeVideoId', data.youtubeVideoId);
-      if (data.title) params.append('title', data.title);
-      if (data.description) params.append('description', data.description);
-      if (data.uploadedBy) params.append('uploadedBy', data.uploadedBy);
-      if (data.category) params.append('category', data.category);
-      if (data.usage) params.append('usage', data.usage);
-
-      return await api.post('/media/youtube', params);
-    } catch (error) {
-      throw error?.response?.data?.error || 'Failed to save YouTube video';
+  try {
+    const videoId = mediaService.extractYoutubeId(data.youtubeVideoId);
+    
+    if (!videoId) {
+      throw 'Invalid YouTube URL or video ID';
     }
-  },
+
+    // Send as URL query params, not body — avoids Content-Type conflict
+    const params = new URLSearchParams();
+    params.append('youtubeVideoId', videoId);
+    if (data.title) params.append('title', data.title);
+    if (data.description) params.append('description', data.description);
+    if (data.uploadedBy) params.append('uploadedBy', data.uploadedBy);
+    if (data.category) params.append('category', data.category);
+    if (data.usage) params.append('usage', data.usage);
+
+    return await api.post(`/media/youtube?${params.toString()}`);
+    //                                   ↑ append to URL, send no body
+
+  } catch (error) {
+    throw error?.response?.data?.error || error || 'Failed to save YouTube video';
+  }
+},
 
   // ══════════════════════════════════════════════════════════════
   // GET ALL MEDIA
