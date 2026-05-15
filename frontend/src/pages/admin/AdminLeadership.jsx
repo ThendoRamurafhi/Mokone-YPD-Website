@@ -1,144 +1,478 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '../../components/admin/AdminLayout';
-import leadershipService from '../../services/leadershipService';
-import mediaService from '../../services/mediaService';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-
-const EMPTY = {
-  name: '', role: '', initials: '', description: '',
-  photoUrl: '', pageSection: 'BOTH', displayOrder: 0,
-};
-
-const SECTIONS = [
-  { value: 'ABOUT_LEADERSHIP', label: 'About page — "Guiding Principles"' },
-  { value: 'STRUCTURE_TEAM',   label: 'Structure page — "Our Leadership"' },
-  { value: 'BOTH',             label: 'Both pages' },
-];
+import leadershipService from '../services/leadershipService';
+import mediaService from '../services/mediaService';
 
 const AdminLeadership = () => {
-  const [leaders,  setLeaders]  = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [editing,  setEditing]  = useState(null);   // null=list, 'new'=new form, obj=edit
-  const [form,     setForm]     = useState(EMPTY);
-  const [saving,   setSaving]   = useState(false);
-  const [msg,      setMsg]      = useState(null);
+  const [leaders, setLeaders] = useState([]);
+  const [leadershipPhotos, setLeadershipPhotos] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [showPhotoPicker, setShowPhotoPicker] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Photo picker
-  const [showPicker,    setShowPicker]    = useState(false);
-  const [pickerImages,  setPickerImages]  = useState([]);
-  const [pickerLoading, setPickerLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    role: '',
+    initials: '',
+    description: '',
+    photoUrl: '',
+    pageSection: 'BOTH',
+    displayOrder: 0
+  });
 
-  const load = async () => {
+  // ══════════════════════════════════════════════════════════════
+  // LOAD DATA
+  // ══════════════════════════════════════════════════════════════
+
+  useEffect(() => {
+    loadLeaders();
+    loadLeadershipPhotos();
+  }, []);
+
+  const loadLeaders = async () => {
     try {
       setLoading(true);
-      const data = await leadershipService.getAll();
-      setLeaders(Array.isArray(data) ? data : []);
-    } catch { setLeaders([]); }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const openNew  = () => { setForm(EMPTY); setEditing('new'); setMsg(null); };
-  const openEdit = (l) => { setForm({ ...l }); setEditing(l); setMsg(null); };
-  const cancel   = () => { setEditing(null); setMsg(null); };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      editing === 'new'
-        ? await leadershipService.create(form)
-        : await leadershipService.update(editing.leaderId, form);
-      setMsg({ type: 'success', text: 'Leader saved!' });
-      await load();
-      setTimeout(() => { setEditing(null); setMsg(null); }, 900);
+      const response = await leadershipService.getAll();
+      setLeaders(response.data || []);
     } catch (err) {
-      setMsg({ type: 'error', text: typeof err === 'string' ? err : 'Save failed.' });
-    } finally { setSaving(false); }
+      console.error('Failed to load leaders:', err);
+      setError('Failed to load leadership data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = async (l) => {
-    if (!window.confirm(`Remove "${l.name}"?`)) return;
-    try { await leadershipService.remove(l.leaderId); await load(); }
-    catch { alert('Delete failed.'); }
-  };
-
-  // Photo picker — loads LEADERSHIP_PROFILE images from Media library
-  const openPicker = async () => {
-    setPickerLoading(true);
-    setShowPicker(true);
+  const loadLeadershipPhotos = async () => {
     try {
-      const data = await mediaService.getByUsage('LEADERSHIP_PROFILE');
-      // Also try STRUCTURE_LEADER usage
-      let extra = [];
-      try { extra = await mediaService.getByUsage('STRUCTURE_LEADER'); } catch {}
-      const all  = [...(Array.isArray(data) ? data : []), ...extra];
-      // Deduplicate by mediaId
-      const seen = new Set();
-      setPickerImages(all.filter(m => {
-        if (seen.has(m.mediaId)) return false;
-        seen.add(m.mediaId); return true;
-      }).filter(m => m.mediaType === 'IMAGE'));
-    } catch { setPickerImages([]); }
-    finally { setPickerLoading(false); }
+      // Get all media with LEADERSHIP category and LEADERSHIP_PROFILE usage
+      const response = await mediaService.getByCategoryAndUsage('LEADERSHIP', 'LEADERSHIP_PROFILE');
+      setLeadershipPhotos(response.data || []);
+    } catch (err) {
+      console.error('Failed to load leadership photos:', err);
+    }
   };
 
-  const pickPhoto = (item) => {
-    setForm({ ...form, photoUrl: item.fileUrl });
-    setShowPicker(false);
+  // ══════════════════════════════════════════════════════════════
+  // FORM HANDLERS
+  // ══════════════════════════════════════════════════════════════
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      if (editingId) {
+        await leadershipService.update(editingId, formData);
+      } else {
+        await leadershipService.create(formData);
+      }
+      
+      resetForm();
+      loadLeaders();
+      alert(editingId ? 'Leader updated successfully!' : 'Leader added successfully!');
+    } catch (err) {
+      console.error('Failed to save leader:', err);
+      setError('Failed to save leader. Please try again.');
+    }
   };
 
-  // Styles
-  const inp = { width: '100%', padding: '11px 14px', border: '1.5px solid rgba(26,71,49,.2)', borderRadius: 6, fontSize: 14, outline: 'none', fontFamily: "'Lato',sans-serif", boxSizing: 'border-box' };
-  const lbl = { display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '.12em', color: '#3d5247', marginBottom: 7 };
+  const handleEdit = (leader) => {
+    setFormData({
+      name: leader.name,
+      role: leader.role,
+      initials: leader.initials || '',
+      description: leader.description || '',
+      photoUrl: leader.photoUrl || '',
+      pageSection: leader.pageSection,
+      displayOrder: leader.displayOrder
+    });
+    setEditingId(leader.leaderId);
+    setShowForm(true);
+  };
 
-  const sectionLabel = (v) => SECTIONS.find(s => s.value === v)?.label || v;
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this leader?')) return;
+
+    try {
+      await leadershipService.remove(id);
+      loadLeaders();
+      alert('Leader removed successfully!');
+    } catch (err) {
+      console.error('Failed to delete leader:', err);
+      setError('Failed to delete leader');
+    }
+  };
+
+  const handlePhotoSelect = (photo) => {
+    setFormData({ ...formData, photoUrl: photo.fileUrl });
+    setShowPhotoPicker(false);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      role: '',
+      initials: '',
+      description: '',
+      photoUrl: '',
+      pageSection: 'BOTH',
+      displayOrder: 0
+    });
+    setEditingId(null);
+    setShowForm(false);
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════════════════════
 
   return (
-    <AdminLayout>
+    <div style={{ padding: '32px', maxWidth: 1400, margin: '0 auto', fontFamily: 'Lato,sans-serif' }}>
+      <style>{`
+        .leader-card {
+          border: 1px solid rgba(0,0,0,.08);
+          border-radius: 12px;
+          overflow: hidden;
+          background: #fff;
+          transition: all .25s;
+        }
+        .leader-card:hover {
+          box-shadow: 0 8px 24px rgba(0,0,0,.1);
+          transform: translateY(-2px);
+        }
+        .btn {
+          padding: 10px 20px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-family: Lato,sans-serif;
+          font-size: 13px;
+          font-weight: 600;
+          transition: all .2s;
+        }
+        .btn-primary {
+          background: #1a4731;
+          color: #fff;
+        }
+        .btn-primary:hover {
+          background: #0d2b1a;
+        }
+        .btn-secondary {
+          background: #e9ecef;
+          color: #333;
+        }
+        .btn-secondary:hover {
+          background: #dee2e6;
+        }
+        .btn-danger {
+          background: #c0392b;
+          color: #fff;
+        }
+        .btn-danger:hover {
+          background: #a93226;
+        }
+        input, select, textarea {
+          width: 100%;
+          padding: 10px 12px;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          font-family: Lato,sans-serif;
+          font-size: 14px;
+        }
+        input:focus, select:focus, textarea:focus {
+          outline: none;
+          border-color: #1a4731;
+        }
+        .photo-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+          gap: 12px;
+          max-height: 400px;
+          overflow-y: auto;
+        }
+        .photo-option {
+          aspect-ratio: 1;
+          border-radius: 8px;
+          overflow: hidden;
+          cursor: pointer;
+          border: 3px solid transparent;
+          transition: all .2s;
+        }
+        .photo-option:hover {
+          border-color: #c9a84c;
+          transform: scale(1.05);
+        }
+      `}</style>
 
-      {/* ── PHOTO PICKER MODAL ── */}
-      {showPicker && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ background: '#fff', borderRadius: 14, width: '100%', maxWidth: 680, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(0,0,0,.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* ══════════════════════════════════════════════════════════════
+          HEADER
+      ══════════════════════════════════════════════════════════════ */}
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 700, color: '#0d2b1a', marginBottom: 6 }}>
+            Leadership Management
+          </h1>
+          <p style={{ fontSize: 14, color: '#6b8070' }}>
+            Manage church leaders displayed on About and Structure pages
+          </p>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="btn btn-primary"
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          {showForm ? '✕ Cancel' : '➕ Add Leader'}
+        </button>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════
+          ERROR MESSAGE
+      ══════════════════════════════════════════════════════════════ */}
+      
+      {error && (
+        <div style={{
+          background: '#fee',
+          border: '1px solid #c0392b',
+          color: '#c0392b',
+          padding: '12px 16px',
+          borderRadius: 8,
+          marginBottom: 24
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          ADD/EDIT FORM
+      ══════════════════════════════════════════════════════════════ */}
+      
+      {showForm && (
+        <div style={{
+          background: '#f7f9f7',
+          border: '1px solid rgba(0,0,0,.08)',
+          borderRadius: 12,
+          padding: 24,
+          marginBottom: 32
+        }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 20, color: '#0d2b1a' }}>
+            {editingId ? 'Edit Leader' : 'Add New Leader'}
+          </h2>
+
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+              {/* Name */}
               <div>
-                <h3 style={{ fontFamily: 'Georgia,serif', fontSize: 20, color: '#0d2b1a', marginBottom: 4 }}>Pick Leader Photo</h3>
-                <p style={{ fontSize: 12, color: '#6b8070' }}>
-                  Only showing images uploaded with usage "Leadership Profile" or "Structure Leader".
-                  Upload photos in the <strong>Media Library</strong> first with those usage tags.
-                </p>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Rev. John Doe"
+                  required
+                />
               </div>
-              <button onClick={() => setShowPicker(false)}
-                style={{ background: 'transparent', border: '1px solid rgba(0,0,0,.15)', borderRadius: 6, width: 32, height: 32, cursor: 'pointer', color: '#6b8070', fontSize: 16 }}>✕</button>
+
+              {/* Role */}
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
+                  Role/Title *
+                </label>
+                <input
+                  type="text"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  placeholder="Presiding Elder"
+                  required
+                />
+              </div>
+
+              {/* Initials */}
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
+                  Initials (fallback if no photo)
+                </label>
+                <input
+                  type="text"
+                  value={formData.initials}
+                  onChange={(e) => setFormData({ ...formData, initials: e.target.value })}
+                  placeholder="JD"
+                  maxLength={3}
+                />
+              </div>
+
+              {/* Display Order */}
+              <div>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
+                  Display Order
+                </label>
+                <input
+                  type="number"
+                  value={formData.displayOrder}
+                  onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) })}
+                  min="0"
+                />
+              </div>
             </div>
-            <div style={{ overflowY: 'auto', padding: 20, flex: 1 }}>
-              {pickerLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><LoadingSpinner /></div>
-              ) : pickerImages.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#aaa' }}>
-                  <div style={{ fontSize: 40, marginBottom: 12 }}>📷</div>
-                  <p style={{ fontSize: 14, marginBottom: 8 }}>No leader photos yet.</p>
-                  <p style={{ fontSize: 12 }}>
-                    Go to <strong>Media Library</strong> → upload a photo →
-                    set Usage to <strong>"Leadership Profile"</strong> or <strong>"Structure Leader"</strong>.
-                    Then come back here.
+
+            {/* Page Section */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
+                Display On *
+              </label>
+              <select
+                value={formData.pageSection}
+                onChange={(e) => setFormData({ ...formData, pageSection: e.target.value })}
+                required
+              >
+                <option value="BOTH">Both About & Structure Pages</option>
+                <option value="ABOUT_LEADERSHIP">About Page Only</option>
+                <option value="STRUCTURE_TEAM">Structure Page Only</option>
+              </select>
+            </div>
+
+            {/* Description */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
+                Biography (shown on About page)
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Brief bio or description..."
+                rows="4"
+              />
+            </div>
+
+            {/* Photo URL */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
+                Photo
+              </label>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <input
+                  type="url"
+                  value={formData.photoUrl}
+                  onChange={(e) => setFormData({ ...formData, photoUrl: e.target.value })}
+                  placeholder="Paste photo URL from Media library"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPhotoPicker(true)}
+                  className="btn btn-secondary"
+                >
+                  🖼️ Pick from Media
+                </button>
+              </div>
+              {formData.photoUrl && (
+                <img
+                  src={formData.photoUrl}
+                  alt="Preview"
+                  style={{
+                    width: 100,
+                    height: 100,
+                    objectFit: 'cover',
+                    borderRadius: 8,
+                    marginTop: 12,
+                    border: '2px solid #ddd'
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Submit */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button type="submit" className="btn btn-primary">
+                {editingId ? '✓ Update Leader' : '➕ Add Leader'}
+              </button>
+              <button type="button" onClick={resetForm} className="btn btn-secondary">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          PHOTO PICKER MODAL
+      ══════════════════════════════════════════════════════════════ */}
+      
+      {showPhotoPicker && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,.6)',
+            zIndex: 200,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24
+          }}
+          onClick={() => setShowPhotoPicker(false)}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 12,
+              maxWidth: 700,
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid rgba(0,0,0,.08)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600 }}>
+                Select Leadership Photo
+              </h3>
+              <button
+                onClick={() => setShowPhotoPicker(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 20,
+                  cursor: 'pointer'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ padding: 24, overflowY: 'auto' }}>
+              {leadershipPhotos.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#aaa' }}>
+                  <p>No leadership photos found.</p>
+                  <p style={{ fontSize: 12, marginTop: 8 }}>
+                    Upload photos to Media page with Category: LEADERSHIP and Usage: LEADERSHIP_PROFILE
                   </p>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 12 }}>
-                  {pickerImages.map(item => (
-                    <div key={item.mediaId} onClick={() => pickPhoto(item)}
-                      style={{ cursor: 'pointer', borderRadius: 8, overflow: 'hidden', border: '2px solid transparent', transition: 'all .2s' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#c9a84c'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-                      <img src={item.fileUrl} alt={item.title}
-                        style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} />
-                      <div style={{ padding: '6px 8px', background: '#fff', fontSize: 11, color: '#3d5247', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {item.title || item.fileName}
-                      </div>
-                    </div>
+                <div className="photo-grid">
+                  {leadershipPhotos.map(photo => (
+                    <div
+                      key={photo.mediaId}
+                      className="photo-option"
+                      onClick={() => handlePhotoSelect(photo)}
+                      style={{
+                        backgroundImage: `url(${photo.fileUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                      title={photo.title}
+                    />
                   ))}
                 </div>
               )}
@@ -147,166 +481,143 @@ const AdminLeadership = () => {
         </div>
       )}
 
-      {editing ? (
-        /* ── FORM VIEW ── */
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
-            <button onClick={cancel} style={{ background: 'transparent', border: '1px solid rgba(0,0,0,.15)', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 13, color: '#6b8070' }}>← Back</button>
-            <h1 style={{ fontFamily: 'Georgia,serif', fontSize: 24, color: '#0d2b1a' }}>
-              {editing === 'new' ? 'Add Leader' : 'Edit Leader'}
-            </h1>
-          </div>
-
-          {msg && (
-            <div style={{ padding: '12px 16px', borderRadius: 6, marginBottom: 20, background: msg.type === 'success' ? 'rgba(37,96,64,.1)' : 'rgba(192,57,43,.08)', border: `1px solid ${msg.type === 'success' ? 'rgba(37,96,64,.3)' : 'rgba(192,57,43,.3)'}`, color: msg.type === 'success' ? '#1a4731' : '#c0392b', fontSize: 13 }}>
-              {msg.text}
-            </div>
-          )}
-
-          <form onSubmit={handleSave} style={{ background: '#fff', borderRadius: 12, padding: 28, border: '1px solid rgba(0,0,0,.07)' }}>
-
-            {/* Photo picker */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={lbl}>PHOTO</label>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                {/* Preview */}
-                <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', background: '#1a4731', border: '2px solid #c9a84c', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c9a84c', fontFamily: 'Georgia,serif', fontWeight: 700, fontSize: 20 }}>
-                  {form.photoUrl ? (
-                    <img src={form.photoUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
-                  ) : (form.initials || '?')}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                    <input value={form.photoUrl || ''} onChange={e => setForm({ ...form, photoUrl: e.target.value })}
-                      placeholder="Paste photo URL, or click Pick Photo" style={{ ...inp, flex: 1 }} />
-                    <button type="button" onClick={openPicker}
-                      style={{ background: '#1a4731', color: '#fff', border: 'none', padding: '0 16px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: "'Lato',sans-serif", whiteSpace: 'nowrap' }}>
-                      📷 Pick Photo
-                    </button>
-                  </div>
-                  <p style={{ fontSize: 11, color: '#6b8070' }}>
-                    Upload the photo in Media Library with usage "Leadership Profile", then pick it here.
-                    If no photo, the initials fallback is shown.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-              <div>
-                <label style={lbl}>FULL NAME *</label>
-                <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Rev. John Doe" style={inp} />
-              </div>
-              <div>
-                <label style={lbl}>ROLE / TITLE *</label>
-                <input required value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} placeholder="Presiding Elder" style={inp} />
-              </div>
-              <div>
-                <label style={lbl}>INITIALS <span style={{ fontWeight: 400, color: '#aaa' }}>(fallback if no photo)</span></label>
-                <input value={form.initials || ''} onChange={e => setForm({ ...form, initials: e.target.value })} placeholder="JD" style={inp} maxLength={4} />
-              </div>
-              <div>
-                <label style={lbl}>DISPLAY ORDER <span style={{ fontWeight: 400, color: '#aaa' }}>(lower = first)</span></label>
-                <input type="number" value={form.displayOrder || 0} onChange={e => setForm({ ...form, displayOrder: parseInt(e.target.value) || 0 })} style={inp} />
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={lbl}>APPEARS ON</label>
-              <select value={form.pageSection || 'BOTH'} onChange={e => setForm({ ...form, pageSection: e.target.value })} style={{ ...inp, background: '#fff', cursor: 'pointer' }}>
-                {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
-            </div>
-
-            <div style={{ marginBottom: 22 }}>
-              <label style={lbl}>BIO / DESCRIPTION <span style={{ fontWeight: 400, color: '#aaa' }}>(shown on About page)</span></label>
-              <textarea rows={3} value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })}
-                placeholder="Short bio about this leader…" style={{ ...inp, resize: 'vertical' }} />
-            </div>
-
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button type="submit" disabled={saving}
-                style={{ background: '#1a4731', color: '#fff', border: 'none', padding: '13px 32px', borderRadius: 8, fontFamily: "'Lato',sans-serif", fontSize: 14, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
-                {saving ? 'Saving…' : editing === 'new' ? 'Add Leader' : 'Save Changes'}
-              </button>
-              <button type="button" onClick={cancel}
-                style={{ background: 'transparent', border: '1px solid rgba(0,0,0,.18)', color: '#6b8070', padding: '13px 24px', borderRadius: 8, fontFamily: "'Lato',sans-serif", fontSize: 14, cursor: 'pointer' }}>
-                Cancel
-              </button>
-            </div>
-          </form>
+      {/* ══════════════════════════════════════════════════════════════
+          LEADERS LIST
+      ══════════════════════════════════════════════════════════════ */}
+      
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
+          Loading...
         </div>
-
+      ) : leaders.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px', color: '#aaa' }}>
+          <p style={{ fontSize: 18, marginBottom: 8 }}>No leaders added yet</p>
+          <p style={{ fontSize: 14 }}>Click "Add Leader" to get started</p>
+        </div>
       ) : (
-        /* ── LIST VIEW ── */
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-            <h1 style={{ fontFamily: 'Georgia,serif', fontSize: 28, color: '#0d2b1a' }}>Leadership Team</h1>
-            <button onClick={openNew}
-              style={{ background: '#c9a84c', color: '#0d2b1a', border: 'none', padding: '12px 24px', borderRadius: 8, fontFamily: "'Lato',sans-serif", fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-              + Add Leader
-            </button>
-          </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: 20
+        }}>
+          {leaders.map(leader => (
+            <div key={leader.leaderId} className="leader-card">
+              {/* Photo */}
+              <div style={{
+                height: 200,
+                background: leader.photoUrl
+                  ? `url(${leader.photoUrl})`
+                  : 'linear-gradient(135deg, #1a4731, #40916c)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative'
+              }}>
+                {!leader.photoUrl && leader.initials && (
+                  <span style={{
+                    fontSize: 48,
+                    fontWeight: 700,
+                    color: 'rgba(255,255,255,.9)',
+                    fontFamily: 'Georgia,serif'
+                  }}>
+                    {leader.initials}
+                  </span>
+                )}
+                
+                {/* Page Section Badge */}
+                <div style={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 12,
+                  background: 'rgba(0,0,0,.7)',
+                  color: '#fff',
+                  padding: '4px 10px',
+                  borderRadius: 4,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '.05em'
+                }}>
+                  {leader.pageSection === 'BOTH' ? '📄 BOTH PAGES' :
+                   leader.pageSection === 'ABOUT_LEADERSHIP' ? '📖 ABOUT' :
+                   '🏛️ STRUCTURE'}
+                </div>
 
-          <div style={{ background: '#f0f7f3', border: '1px solid rgba(26,71,49,.1)', borderRadius: 8, padding: '12px 16px', marginBottom: 20, fontSize: 13, color: '#3d5247', lineHeight: 1.7 }}>
-            <strong>📋 How to add a photo:</strong>
-            Go to <strong>Media Library</strong> → upload the person's headshot →
-            set Category to <strong>Leadership</strong> and Usage to <strong>Leadership Profile</strong> (for About page)
-            or <strong>Structure Leader</strong> (for Structure page) →
-            then come back here and click <strong>Edit → Pick Photo</strong>.
-          </div>
+                {/* Display Order */}
+                <div style={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 12,
+                  background: '#c9a84c',
+                  color: '#fff',
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 12,
+                  fontWeight: 700
+                }}>
+                  {leader.displayOrder}
+                </div>
+              </div>
 
-          {loading ? <LoadingSpinner /> : (
-            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid rgba(0,0,0,.07)', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f7f9f7', borderBottom: '1px solid rgba(0,0,0,.07)' }}>
-                    {['Photo', 'Name & Role', 'Appears on', 'Order', 'Actions'].map(h => (
-                      <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, letterSpacing: '.1em', color: '#3d5247' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaders.length === 0 ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#aaa', fontSize: 14 }}>
-                      No leaders yet. Add your first leader above.
-                    </td></tr>
-                  ) : leaders.map(l => (
-                    <tr key={l.leaderId} style={{ borderBottom: '1px solid rgba(0,0,0,.05)' }}>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: '#1a4731', border: '2px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c9a84c', fontFamily: 'Georgia,serif', fontWeight: 700, fontSize: 13 }}>
-                          {l.photoUrl ? (
-                            <img src={l.photoUrl} alt={l.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
-                          ) : (l.initials || '?')}
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontWeight: 600, color: '#0d2b1a', fontSize: 14 }}>{l.name}</div>
-                        <div style={{ fontSize: 12, color: '#6b8070' }}>{l.role}</div>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{ background: 'rgba(26,71,49,.08)', color: '#1a4731', fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 3 }}>
-                          {sectionLabel(l.pageSection)}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: 13, color: '#6b8070' }}>{l.displayOrder}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button onClick={() => openEdit(l)}
-                            style={{ background: 'rgba(37,96,64,.1)', color: '#1a4731', border: 'none', padding: '7px 14px', borderRadius: 5, cursor: 'pointer', fontSize: 12, fontFamily: "'Lato',sans-serif", fontWeight: 700 }}>Edit</button>
-                          <button onClick={() => handleDelete(l)}
-                            style={{ background: 'rgba(192,57,43,.1)', color: '#c0392b', border: 'none', padding: '7px 14px', borderRadius: 5, cursor: 'pointer', fontSize: 12, fontFamily: "'Lato',sans-serif", fontWeight: 700 }}>Remove</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {/* Info */}
+              <div style={{ padding: 20 }}>
+                <h3 style={{
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: '#0d2b1a',
+                  marginBottom: 4
+                }}>
+                  {leader.name}
+                </h3>
+                <p style={{
+                  fontSize: 13,
+                  color: '#c9a84c',
+                  fontWeight: 600,
+                  marginBottom: 12
+                }}>
+                  {leader.role}
+                </p>
+                {leader.description && (
+                  <p style={{
+                    fontSize: 12,
+                    color: '#6b8070',
+                    lineHeight: 1.6,
+                    marginBottom: 16,
+                    maxHeight: 60,
+                    overflow: 'hidden'
+                  }}>
+                    {leader.description}
+                  </p>
+                )}
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => handleEdit(leader)}
+                    className="btn btn-secondary"
+                    style={{ flex: 1, fontSize: 12 }}
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(leader.leaderId)}
+                    className="btn btn-danger"
+                    style={{ fontSize: 12 }}
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
+          ))}
         </div>
       )}
-    </AdminLayout>
+    </div>
   );
 };
 
