@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
- 
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
- 
+
 @Service
 @Transactional
 public class MediaService {
@@ -29,15 +29,27 @@ public class MediaService {
     // SECURITY CONSTANTS
     // ══════════════════════════════════════════════════════════════
     private static final List<String> ALLOWED_IMAGE_TYPES = List.of(
-        "image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg"
-    );
+            "image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg");
     private static final List<String> ALLOWED_VIDEO_TYPES = List.of(
-        "video/mp4", "video/mpeg", "video/quicktime", "video/x-msvideo"
-    );
+            "video/mp4", "video/mpeg", "video/quicktime", "video/x-msvideo");
     private static final List<String> ALLOWED_DOC_TYPES = List.of(
-        "application/pdf"
-    );
+            "application/pdf");
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+    // ── FIFO cap: keep only the latest N items for capped sections ──
+    private void enforceCapFIFO(Media.MediaUsage usage, int maxAllowed) {
+        List<Media> existing = mediaRepository
+            .findByUsageOrderByUploadedAtDesc(usage);   // newest first
+
+        if (existing.size() >= maxAllowed) {
+            // Demote the oldest item(s) to GALLERY so they stay visible
+            // in the public gallery but no longer occupy the capped slot
+            existing.subList(maxAllowed - 1, existing.size()).forEach(old -> {
+                old.setUsage(Media.MediaUsage.GALLERY);
+                mediaRepository.save(old);
+            });
+        }
+    }
 
     // ══════════════════════════════════════════════════════════════
     // UPLOAD FILE (LOCAL STORAGE)
@@ -50,53 +62,58 @@ public class MediaService {
             Media.MediaCategory category,
             Media.MediaUsage usage) throws IOException {
 
-        // ── Validation ── 
+        // ── Validation ──
         validateFile(file);
- 
+
         // ── Generate safe filename ──
         String contentType = file.getContentType();
         String fileExtension = sanitizeExtension(
-            getFileExtension(file.getOriginalFilename()), contentType);
+                getFileExtension(file.getOriginalFilename()), contentType);
         String storedFileName = UUID.randomUUID().toString() + fileExtension;
- 
+
         // ── Save to disk ──
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
- 
+
         Path filePath = uploadPath.resolve(storedFileName).normalize();
- 
+
         // Path traversal check
         if (!filePath.startsWith(uploadPath)) {
             throw new RuntimeException("Invalid file path detected");
         }
- 
+
         Files.copy(file.getInputStream(), filePath,
-            StandardCopyOption.REPLACE_EXISTING);
- 
+                StandardCopyOption.REPLACE_EXISTING);
+
         // ── Save to database ──
         Media.MediaType mediaType = determineMediaType(contentType);
- 
+
         Media media = new Media();
         media.setFileName(sanitizeFileName(file.getOriginalFilename()));
         media.setStoredFileName(storedFileName);
-        //media.setFileUrl("/api/v1/media/files/" + storedFileName);
+        // media.setFileUrl("/api/v1/media/files/" + storedFileName);
         media.setFileUrl("http://localhost:8080/api/v1/media/files/" + storedFileName);
         media.setFileType(contentType);
         media.setFileSize(file.getSize());
         media.setMediaType(mediaType);
         media.setCategory(category != null ? category : Media.MediaCategory.GENERAL);
-        media.setUsage(usage != null ? usage : Media.MediaUsage.GENERAL);
+        media.setUsage(usage != null ? usage : Media.MediaUsage.GALLERY);
         media.setTitle(title != null ? title : sanitizeFileName(file.getOriginalFilename()));
         media.setDescription(description);
         media.setUploadedBy(uploadedBy);
         media.setIsYoutubeVideo(false);
- 
+
+        // Enforce caps
+        if (usage == Media.MediaUsage.HOME_STAY_INFORMED) enforceCapFIFO(usage, 4);
+        if (usage == Media.MediaUsage.ABOUT_JOURNEY)      enforceCapFIFO(usage, 4);
+        if (usage == Media.MediaUsage.HOME_HERO)          enforceCapFIFO(usage, 1);
+
         Media saved = mediaRepository.save(media);
         return new MediaResponseDTO(saved);
     }
- 
+
     // ══════════════════════════════════════════════════════════════
     // SAVE YOUTUBE VIDEO REFERENCE
     // ══════════════════════════════════════════════════════════════
@@ -107,158 +124,160 @@ public class MediaService {
             String uploadedBy,
             Media.MediaCategory category,
             Media.MediaUsage usage) {
- 
+
         // Validate YouTube video ID format (11 characters, alphanumeric + - _)
         if (youtubeVideoId == null || !youtubeVideoId.matches("[A-Za-z0-9_-]{11}")) {
             throw new RuntimeException("Invalid YouTube video ID format");
         }
- 
+
         Media media = new Media();
         media.setYoutubeVideoId(youtubeVideoId);
         media.setYoutubeThumbnail(
-            "https://img.youtube.com/vi/" + youtubeVideoId + "/maxresdefault.jpg");
+                "https://img.youtube.com/vi/" + youtubeVideoId + "/maxresdefault.jpg");
         media.setIsYoutubeVideo(true);
         media.setFileUrl("https://www.youtube.com/watch?v=" + youtubeVideoId);
         media.setMediaType(Media.MediaType.VIDEO);
         media.setCategory(category != null ? category : Media.MediaCategory.GENERAL);
-        media.setUsage(usage != null ? usage : Media.MediaUsage.GALLERY);
+        media.setUsage(usage != null ? usage : Media.MediaUsage.VIDEO_GALLERY);
         media.setTitle(title != null ? title : "YouTube Video");
         media.setDescription(description);
         media.setUploadedBy(uploadedBy);
         media.setFileName("youtube-" + youtubeVideoId);
- 
+
         Media saved = mediaRepository.save(media);
         return new MediaResponseDTO(saved);
     }
- 
+
     // ══════════════════════════════════════════════════════════════
     // QUERY METHODS
     // ══════════════════════════════════════════════════════════════
-    
+
     public List<MediaResponseDTO> getAllMedia() {
         return mediaRepository.findAll()
-            .stream()
-            .map(MediaResponseDTO::new)
-            .collect(Collectors.toList());
+                .stream()
+                .map(MediaResponseDTO::new)
+                .collect(Collectors.toList());
     }
- 
+
     public List<MediaResponseDTO> getByType(Media.MediaType mediaType) {
         return mediaRepository
-            .findByMediaTypeOrderByUploadedAtDesc(mediaType)
-            .stream()
-            .map(MediaResponseDTO::new)
-            .collect(Collectors.toList());
+                .findByMediaTypeOrderByUploadedAtDesc(mediaType)
+                .stream()
+                .map(MediaResponseDTO::new)
+                .collect(Collectors.toList());
     }
- 
+
     public List<MediaResponseDTO> getByCategory(Media.MediaCategory category) {
         return mediaRepository
-            .findByCategoryOrderByUploadedAtDesc(category)
-            .stream()
-            .map(MediaResponseDTO::new)
-            .collect(Collectors.toList());
+                .findByCategoryOrderByUploadedAtDesc(category)
+                .stream()
+                .map(MediaResponseDTO::new)
+                .collect(Collectors.toList());
     }
- 
+
     public List<MediaResponseDTO> getByUsage(Media.MediaUsage usage) {
         return mediaRepository
-            .findByUsageOrderByUploadedAtDesc(usage)
-            .stream()
-            .map(MediaResponseDTO::new)
-            .collect(Collectors.toList());
+                .findByUsageOrderByUploadedAtDesc(usage)
+                .stream()
+                .map(MediaResponseDTO::new)
+                .collect(Collectors.toList());
     }
- 
+
     public List<MediaResponseDTO> getByCategoryAndUsage(
-            Media.MediaCategory category, 
+            Media.MediaCategory category,
             Media.MediaUsage usage) {
         return mediaRepository
-            .findByCategoryAndUsageOrderByUploadedAtDesc(category, usage)
-            .stream()
-            .map(MediaResponseDTO::new)
-            .collect(Collectors.toList());
+                .findByCategoryAndUsageOrderByUploadedAtDesc(category, usage)
+                .stream()
+                .map(MediaResponseDTO::new)
+                .collect(Collectors.toList());
     }
- 
+
     public MediaResponseDTO getMediaById(Long id) {
         Media media = mediaRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Media not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Media not found with id: " + id));
         return new MediaResponseDTO(media);
     }
- 
+
     // ══════════════════════════════════════════════════════════════
     // DELETE MEDIA
     // ══════════════════════════════════════════════════════════════
-    
+
     public void deleteMedia(Long id) throws IOException {
         Media media = mediaRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Media not found with id: " + id));
- 
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Media not found with id: " + id));
+
         // Only delete physical file if not YouTube video
         if (!media.getIsYoutubeVideo() && media.getStoredFileName() != null) {
             Path filePath = Paths.get(uploadDir)
-                .resolve(media.getStoredFileName())
-                .normalize();
+                    .resolve(media.getStoredFileName())
+                    .normalize();
             Files.deleteIfExists(filePath);
         }
- 
+
         mediaRepository.deleteById(id);
     }
- 
+
     // ══════════════════════════════════════════════════════════════
     // HELPER METHODS
     // ══════════════════════════════════════════════════════════════
- 
+
     private void validateFile(MultipartFile file) {
         if (file.isEmpty()) {
             throw new RuntimeException("Cannot upload empty file");
         }
- 
+
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new RuntimeException("File size exceeds 50MB limit");
         }
- 
+
         String contentType = file.getContentType();
         List<String> allAllowed = new ArrayList<>();
         allAllowed.addAll(ALLOWED_IMAGE_TYPES);
         allAllowed.addAll(ALLOWED_VIDEO_TYPES);
         allAllowed.addAll(ALLOWED_DOC_TYPES);
- 
+
         if (contentType == null || !allAllowed.contains(contentType)) {
             throw new RuntimeException(
-                "File type not allowed. Only images, videos and PDFs accepted.");
+                    "File type not allowed. Only images, videos and PDFs accepted.");
         }
     }
- 
+
     private String sanitizeExtension(String extension, String contentType) {
         Map<String, String> safeExtensions = Map.of(
-            "image/jpeg", ".jpg",
-            "image/jpg", ".jpg",
-            "image/png", ".png",
-            "image/gif", ".gif",
-            "image/webp", ".webp",
-            "video/mp4", ".mp4",
-            "video/mpeg", ".mpeg",
-            "video/quicktime", ".mov",
-            "application/pdf", ".pdf"
-        );
+                "image/jpeg", ".jpg",
+                "image/jpg", ".jpg",
+                "image/png", ".png",
+                "image/gif", ".gif",
+                "image/webp", ".webp",
+                "video/mp4", ".mp4",
+                "video/mpeg", ".mpeg",
+                "video/quicktime", ".mov",
+                "application/pdf", ".pdf");
         return safeExtensions.getOrDefault(contentType, ".bin");
     }
- 
+
     private String sanitizeFileName(String fileName) {
-        if (fileName == null) return "unnamed";
+        if (fileName == null)
+            return "unnamed";
         return fileName.replaceAll("[^a-zA-Z0-9._-]", "_");
     }
- 
+
     private String getFileExtension(String fileName) {
         if (fileName != null && fileName.contains(".")) {
             return fileName.substring(fileName.lastIndexOf("."));
         }
         return "";
     }
- 
+
     private Media.MediaType determineMediaType(String contentType) {
         if (contentType != null) {
-            if (contentType.startsWith("image/")) return Media.MediaType.IMAGE;
-            if (contentType.startsWith("video/")) return Media.MediaType.VIDEO;
+            if (contentType.startsWith("image/"))
+                return Media.MediaType.IMAGE;
+            if (contentType.startsWith("video/"))
+                return Media.MediaType.VIDEO;
         }
         return Media.MediaType.DOCUMENT;
     }
