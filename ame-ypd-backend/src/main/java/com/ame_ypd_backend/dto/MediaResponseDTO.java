@@ -21,6 +21,7 @@ public class MediaResponseDTO {
     private String description;
     private String uploadedBy;
     private LocalDateTime uploadedAt;
+    private String youtubeWatchUrl;
     
     // YouTube fields
     private Boolean isYoutubeVideo;
@@ -50,6 +51,7 @@ public class MediaResponseDTO {
         if (media.getIsYoutubeVideo() && media.getYoutubeVideoId() != null) {
             this.youtubeEmbedUrl = "https://www.youtube.com/embed/" + 
                 media.getYoutubeVideoId();
+                this.youtubeWatchUrl = "https://www.youtube.com/watch?v=" + media.getYoutubeVideoId();
         }
     }
 }
