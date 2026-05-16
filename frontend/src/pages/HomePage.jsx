@@ -46,6 +46,7 @@ const HomePage = () => {
   const [email,             setEmail]             = useState('');
   const [subscribed,        setSubscribed]        = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [youthSermon, setYouthSermon] = useState(null); // YOUTH category sermon
 
   const handleSubscribe = e => { e.preventDefault(); if (email) { setSubscribed(true); setEmail(''); } };
   const daysUntil = d => Math.max(0, Math.ceil((new Date(d) - new Date()) / 86400000));
@@ -60,15 +61,15 @@ const HomePage = () => {
   const tHoverOff = e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.15)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; };
 
   // New API states
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [latestPosts,    setLatestPosts]    = useState([]);
-  const [updates,        setUpdates]        = useState([]);
-  const [featuredVideo,   setFeaturedVideo]   = useState(null);  // YouTube video from Media
-  const [heroImages,      setHeroImages]      = useState([]);    // Hero images from Media
-  const [stayInformedEvs, setStayInformedEvs] = useState([]);    // Events for STAY INFORMED
-  const [stayInformedImages,setStayInformedImages]= useState([]);
-  const [loading,        setLoading]        = useState(true);
-  const [error,          setError]          = useState(null);
+  const [upcomingEvents, setUpcomingEvents]        = useState([]);
+  const [latestPosts,    setLatestPosts]           = useState([]);
+  const [updates,        setUpdates]               = useState([]);
+  const [featuredVideo,   setFeaturedVideo]        = useState(null);  // YouTube video from Media
+  const [heroImages,      setHeroImages]           = useState([]);    // Hero images from Media
+  const [stayInformedEvs, setStayInformedEvs]      = useState([]);    // Events for STAY INFORMED
+  const [stayInformedImages,setStayInformedImages] = useState([]);
+  const [loading,        setLoading]               = useState(true);
+  const [error,          setError]                 = useState(null);
 
   // New date formatter
   const formatDate = (dateString) => {
@@ -119,16 +120,37 @@ const HomePage = () => {
         const blogResponse = await blogService.getAll({ page: 0, size: 3 });
         setLatestPosts(blogResponse.content || blogResponse || []);
 
-        // ── Media: featured YouTube video for THIS WEEK'S MESSAGE ──
+        // // ── Media: featured YouTube video for THIS WEEK'S MESSAGE ──
+        // try {
+        //   const sermonVideos = await mediaService.getByCategory('WORSHIP');
+        //   const ytVideos = sermonVideos.filter(m => m.isYoutubeVideo);
+        //   if (ytVideos.length > 0) setFeaturedVideo(ytVideos[0]);
+        // } catch { /* media optional */ }
+
+        // // ── Media: featured YOUTH sermon for "This Week's Sermon" ──
+        // try {
+        //   const youthVideos = await mediaService.getByCategory('YOUTH');
+        //   const ytYouth = youthVideos.filter(m => m.isYoutubeVideo);
+        //   if (ytYouth.length > 0) setYouthSermon(ytYouth[0]);
+        // } catch { /* optional */ }
+
+        // ── Latest Sermons (for the sermon card + "Upcoming Events" tile) ──
         try {
-          const sermonVideos = await mediaService.getByCategory('WORSHIP');
-          const ytVideos = sermonVideos.filter(m => m.isYoutubeVideo);
+          const sermons = await mediaService.getByUsage('HOME_LATEST_SERMONS');
+          const ytVideos = sermons.filter(m => m.isYoutubeVideo);
           if (ytVideos.length > 0) setFeaturedVideo(ytVideos[0]);
-        } catch { /* media optional */ }
+        } catch { /* optional */ }
+
+        // ── This Week's Message (Worship Director — for the sermon section) ──
+        try {
+          const thisWeek = await mediaService.getByUsage('HOME_THIS_WEEK');
+          const ytYouth = thisWeek.filter(m => m.isYoutubeVideo);
+          if (ytYouth.length > 0) setYouthSermon(ytYouth[0]);
+        } catch { /* optional */ }
 
         // ── Media: hero images ──
         try {
-          const heroMedia = await mediaService.getByUsage('HERO_SECTION');
+          const heroMedia = await mediaService.getByUsage('HOME_HERO');
           setHeroImages(heroMedia.filter(m => m.mediaType === 'IMAGE'));
         } catch { /* media optional */ }
 
@@ -322,7 +344,8 @@ const HomePage = () => {
               </Link>
 
               {/* Sermons tile */}
-              <Link to="/media" style={{ display: 'flex', alignItems: 'flex-start', gap: 18, background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 14, padding: '24px 22px', textDecoration: 'none', transition: 'box-shadow 0.25s,transform 0.25s' }}
+              <Link to={featuredVideo ? `/media?tab=VIDEOS&play=${featuredVideo.mediaId}` : '/media?tab=VIDEOS'}
+                style={{ display: 'flex', alignItems: 'flex-start', gap: 18, background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: 14, padding: '24px 22px', textDecoration: 'none', transition: 'box-shadow 0.25s,transform 0.25s' }}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 32px rgba(26,71,49,0.12)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}>
                 <div style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0, background: 'rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -330,7 +353,14 @@ const HomePage = () => {
                 </div>
                 <div>
                   <div style={{ fontFamily: 'Georgia,serif', fontSize: 17, fontWeight: 600, color: '#1a4731', marginBottom: 5 }}>Latest Sermons</div>
-                  <div style={{ fontSize: 13, color: '#6b8070' }}>Watch our recent messages on YouTube</div>
+                  <div style={{ fontSize: 13, color: '#6b8070' }}>
+                    {featuredVideo ? featuredVideo.title : 'Watch our recent messages on YouTube'}
+                  </div>
+                  {featuredVideo && (
+                    <span style={{ display: 'inline-block', marginTop: 8, fontSize: 11, fontWeight: 700, color: '#c9a84c' }}>
+                      ▶ WATCH NOW
+                    </span>
+                  )}
                 </div>
               </Link>
 
@@ -351,17 +381,35 @@ const HomePage = () => {
             {/* RIGHT column */}
             <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
               {/* Featured sermon video card */}
-              <div style={{ borderRadius:14, overflow:'hidden', border:'1px solid rgba(0,0,0,0.07)' }}>
-                <div style={{ background:'linear-gradient(135deg,#1a4731,#40916c)', height:200, display:'flex', alignItems:'center', justifyContent:'center', position:'relative', cursor:'pointer' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-                  <div style={{ position:'absolute', bottom:12, left:14, background:'rgba(201,168,76,0.9)', color:'#0d2b1a', fontSize:10, fontWeight:700, letterSpacing:'0.1em', padding:'4px 10px', borderRadius:3 }}>Featured</div>
+              <Link to="/media?tab=VIDEOS" style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.07)', textDecoration: 'none', display: 'block' }}>
+                <div style={{
+                  height: 200,
+                  background: featuredVideo?.youtubeThumbnail
+                    ? `url(${featuredVideo.youtubeThumbnail}) center/cover no-repeat`
+                    : 'linear-gradient(135deg,#1a4731,#40916c)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative', cursor: 'pointer'
+                }}>
+                  {/* Play icon overlay */}
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(201,168,76,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#0d2b1a"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    </div>
+                  </div>
+                  <div style={{ position: 'absolute', bottom: 12, left: 14, background: 'rgba(201,168,76,0.9)', color: '#0d2b1a', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', padding: '4px 10px', borderRadius: 3 }}>
+                    {featuredVideo ? 'LATEST SERMON' : 'Featured'}
+                  </div>
                 </div>
-                <div style={{ background:'#fff', padding:'20px 22px 24px' }}>
-                  <h3 style={{ fontFamily:'Georgia,serif', fontSize:19, fontWeight:600, color:'#1a4731', marginBottom:8 }}>Latest Sermon: Faith in Action</h3>
-                  <p style={{ fontSize:13, color:'#6b8070', lineHeight:1.65, marginBottom:14 }}>Watch our most recent message about living out faith through service.</p>
-                  <Link to="/media" style={{ color:'#1a4731', textDecoration:'none', fontSize:13, fontWeight:700 }}>Watch Now →</Link>
+                <div style={{ background: '#fff', padding: '20px 22px 24px' }}>
+                  <h3 style={{ fontFamily: 'Georgia,serif', fontSize: 19, fontWeight: 600, color: '#1a4731', marginBottom: 8 }}>
+                    {featuredVideo ? featuredVideo.title : 'Latest Sermon: Faith in Action'}
+                  </h3>
+                  <p style={{ fontSize: 13, color: '#6b8070', lineHeight: 1.65, marginBottom: 14 }}>
+                    {featuredVideo?.description || 'Tune in to our latest sermon where we dive deep into faith and inspiration. Experience spiritual renewal this week.'}
+                  </p>
+                  <span style={{ color: '#1a4731', textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>Watch Now →</span>
                 </div>
-              </div>
+              </Link>
 
               <div>
                 <h3 style={{ fontFamily:'Georgia,serif', fontSize:17, fontWeight:600, color:'#0d2b1a', marginBottom:14 }}>Recent Updates</h3>
@@ -399,64 +447,58 @@ const HomePage = () => {
             <div>
               <span className="section-eyebrow">THIS WEEK'S MESSAGE</span>
               <h2 className="section-title-light" style={{ marginBottom:20 }}>This Week's Sermon</h2>
-              <p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:'rgba(255,255,255,0.65)', fontStyle:'italic', lineHeight:1.7, marginBottom:12 }}>
-                "The kingdom of God is within you — not in outward signs, but in the transformation of the heart."
-              </p>
-              <p style={{ fontFamily:"'Lato',sans-serif", fontSize:13, color:'rgba(255,255,255,0.4)', marginBottom:36 }}>— Rev. John Doe · Luke 17:20-21</p>
               <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, marginBottom: 36 }}>
-                {featuredVideo?.description || 'Tune in to our latest sermon where we dive deep into faith and inspiration. Experience spiritual renewal this week.'}
+                {youthSermon?.description || 'Tune in to our latest youth sermon where we dive deep into faith and inspiration.'}
               </p>
-              {featuredVideo?.youtubeWatchUrl ? (
-                <a href={featuredVideo.youtubeWatchUrl} target="_blank" rel="noopener noreferrer"
+              {youthSermon?.youtubeWatchUrl ? (
+                <a href={youthSermon.youtubeWatchUrl} target="_blank" rel="noopener noreferrer"
                   className="btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', fontSize: 13 }}>
                   ▶ WATCH ON YOUTUBE
                 </a>
               ) : (
-                <button onClick={() => setPlaying(true)} className="btn-gold" style={{ display: 'flex', alignItems: 'center', gap: 10, border: 'none', cursor: 'pointer', fontSize: 13 }}>
-                  <NavIcons.Play /> WATCH NOW
-                </button>
+                <Link to="/media?tab=VIDEOS" className="btn-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', fontSize: 13 }}>
+                  <NavIcons.Play /> VIEW SERMONS
+                </Link>
               )}
             </div>
             <div>
-              <div style={{ background: 'linear-gradient(135deg,#1a4731,#0d2218)', borderRadius: 12, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(201,168,76,0.2)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
-                onClick={() => {
-                  if (featuredVideo?.youtubeWatchUrl) {
-                    window.open(featuredVideo.youtubeWatchUrl, '_blank', 'noopener');
-                  } else {
-                    setPlaying(!playing);
-                  }
-                }}>
-                {/* Background thumbnail */}
-                {featuredVideo?.youtubeThumbnail && (
-                  <img src={featuredVideo.youtubeThumbnail} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
-                )}
-                {playing && !featuredVideo ? (
-                  <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', borderRadius: 12 }}
-                    allowFullScreen title="Sermon" />
-                ) : (
-                  <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-                    <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(201,168,76,0.2)', border: '2px solid var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                      <NavIcons.Play />
-                    </div>
-                    <p style={{ fontFamily: "'Cormorant Garamond',serif", color: 'rgba(255,255,255,0.7)', fontSize: 15 }}>
-                      {featuredVideo ? featuredVideo.title : 'Click to Watch Sermon'}
-                    </p>
-                    {featuredVideo && (
-                      <p style={{ fontFamily: "'Lato',sans-serif", color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 6 }}>
-                        Opens on YouTube ↗
+              <div>
+                <div style={{ background: 'linear-gradient(135deg,#1a4731,#0d2218)', borderRadius: 12, aspectRatio: '16/9', border: '1px solid rgba(201,168,76,0.2)', position: 'relative', overflow: 'hidden' }}>
+                  {youthSermon?.youtubeEmbedUrl ? (
+                    <iframe
+                      src={`${youthSermon.youtubeEmbedUrl}?rel=0`}
+                      title={youthSermon.title}
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                  ) : (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(201,168,76,0.2)', border: '2px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <NavIcons.Play />
+                      </div>
+                      <p style={{ fontFamily: "'Cormorant Garamond',serif", color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>
+                        No youth sermon uploaded yet
                       </p>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginTop:16 }}>
-                {[['View','Access our sermon library'],['Share','Spread the Word with others'],['Discuss','Join group conversations'],['Join','Become a member today']].map(([t,d])=>(
-                  <div key={t} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(201,168,76,0.1)', borderRadius:8, padding:'14px 16px' }}>
-                    <div style={{ fontFamily:"'Lato',sans-serif", fontSize:12, fontWeight:700, color:'var(--gold)', marginBottom:4 }}>{t}</div>
-                    <div style={{ fontFamily:"'Lato',sans-serif", fontSize:11, color:'rgba(255,255,255,0.4)', lineHeight:1.5 }}>{d}</div>
-                  </div>
-                ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Buttons */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+                  {[
+                    ['View All', 'Visit sermon library', `/media?tab=VIDEOS`],
+                    ['Share', 'Spread the Word', youthSermon?.youtubeWatchUrl || '#'],
+                    ['Watch Full', 'Open on YouTube', youthSermon?.youtubeWatchUrl || '#'],
+                    ['Join', 'Become a member today', '/register'],
+                  ].map(([t, d, href]) => (
+                    <a key={t} href={href} target={href.startsWith('http') ? '_blank' : '_self'} rel="noopener noreferrer"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.1)', borderRadius: 8, padding: '14px 16px', textDecoration: 'none', display: 'block' }}>
+                      <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: '#c9a84c', marginBottom: 4 }}>{t}</div>
+                      <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>{d}</div>
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
