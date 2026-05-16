@@ -54,7 +54,7 @@ const AboutPage = () => {
 
   useEffect(() => {
     // Load leaders for About page
-    leadershipService.getForAbout()
+    leadershipService.getForAbout() //mediaService.getByUsage('LEADERSHIP_PROFILE')  // Executive headshots
       .then(data => setLeaders(Array.isArray(data) ? data : []))
       .catch(() => setLeaders([]));
 
@@ -322,10 +322,10 @@ const AboutPage = () => {
           <div style={{ maxWidth:640, margin:'0 auto' }}>
             {orgLevels.map((item,i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:16, marginBottom:12 }}>
-                <div style={{ width:44, height:44, borderRadius:'50%', background:item.color, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--gold)', fontFamily:'Georgia,serif', fontSize:12, fontWeight:700, flexShrink:0 }}>
+                <div style={{ width:44, height:44, borderRadius:'50%', background:item.bg, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--gold)', fontFamily:'Georgia,serif', fontSize:12, fontWeight:700, flexShrink:0 }}>
                   {item.level}
                 </div>
-                <div style={{ flex:1, background:item.color, color:'#fff', padding:'14px 24px', borderRadius:8, textAlign:'left', fontFamily:'Georgia,serif', fontSize:16 }}>
+                <div style={{ flex:1, background:item.bg, color:'#fff', padding:'14px 24px', borderRadius:8, textAlign:'left', fontFamily:'Georgia,serif', fontSize:16 }}>
                   {item.title}
                 </div>
               </div>
