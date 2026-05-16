@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import mediaService from '../services/mediaService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const MediaPage = () => {
-  const [activeTab, setActiveTab] = useState('PHOTOS');
-  const [lightbox, setLightbox]   = useState(null);
-  const [media, setMedia]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
+  const [searchParams]              = useSearchParams();
+  const [activeTab, setActiveTab]   = useState(searchParams.get('tab') || 'PHOTOS');
+  const [lightbox, setLightbox]     = useState(null);
+  const [autoPlayId, setAutoPlayId] = useState(searchParams.get('play') || null);
+  const [media, setMedia]           = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
 
- // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════
   // LOAD MEDIA FROM API
   // ══════════════════════════════════════════════════════════════
   
@@ -30,6 +32,20 @@ const MediaPage = () => {
 
     loadMedia();
   }, []);
+
+  // ══════════════════════════════════════════════════════════════
+  // Auto-play video if ?play=ID param is present
+  // ══════════════════════════════════════════════════════════════
+  useEffect(() => {
+    if (autoPlayId && media.length > 0) {
+      const target = media.find(m => String(m.mediaId) === String(autoPlayId));
+      if (target) {
+        setActiveTab('VIDEOS');
+        setLightbox(target);
+        setAutoPlayId(null); // clear so it doesn't re-trigger
+      }
+    }
+  }, [autoPlayId, media]);
 
   // ══════════════════════════════════════════════════════════════
   // FILTER BY TAB
@@ -67,12 +83,16 @@ const MediaPage = () => {
   // YouTube videos open YouTube directly; local videos open lightbox
   // ══════════════════════════════════════════════════════════════
 
+  // const handleCardClick = (item) => {
+  //   if (item.isYoutubeVideo && item.youtubeWatchUrl) {
+  //     window.open(item.youtubeWatchUrl, '_blank', 'noopener,noreferrer');
+  //   } else {
+  //     setLightbox(item);
+  //   }
+  // };
+
   const handleCardClick = (item) => {
-    if (item.isYoutubeVideo && item.youtubeWatchUrl) {
-      window.open(item.youtubeWatchUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      setLightbox(item);
-    }
+    setLightbox(item); // always open lightbox, both YouTube and local
   };
 
   return (
@@ -503,6 +523,7 @@ const MediaPage = () => {
                     border: 'none'
                   }}
                   allowFullScreen
+                  allow="autoplay; encrypted-media"  // ← ADD allow attribute
                 />
               ) : lightbox.mediaType === 'VIDEO' ? (
                 <video
