@@ -16,7 +16,7 @@ const AdminMedia = () => {
     title: '',
     description: '',
     category: 'EVENTS',
-    usage: 'GALLERY',
+    usage: 'PHOTO_GALLERY',
     mediaType: 'IMAGE'
   });
   
@@ -24,8 +24,8 @@ const AdminMedia = () => {
     youtubeUrl: '',
     title: '',
     description: '',
-    category: 'EVENTS',
-    usage: 'GALLERY'
+    category: 'SERMON',
+    usage: 'VIDEO_GALLERY'
   });
 
   const fileRef = useRef(null);
@@ -82,7 +82,7 @@ const AdminMedia = () => {
         title: '',
         description: '',
         category: 'EVENTS',
-        usage: 'GALLERY',
+        usage: 'PHOTO_GALLERY',
         mediaType: 'IMAGE'
       });
       if (fileRef.current) fileRef.current.value = '';
@@ -135,8 +135,8 @@ const AdminMedia = () => {
         youtubeUrl: '',
         title: '',
         description: '',
-        category: 'EVENTS',
-        usage: 'GALLERY'
+        category: 'SERMON',
+        usage: 'VIDEO_GALLERY'
       });
       
       alert('YouTube video added successfully!');
@@ -253,7 +253,7 @@ const AdminMedia = () => {
     { value: 'ABOUT_JOURNEY',       label: 'About page — Journey of Faith' },
     { value: 'LEADERSHIP_PROFILE',  label: 'Leadership profile picture' },
     { value: 'EVENT_COVER',         label: 'Event cover' },
-    { value: 'GALLERY',             label: 'Gallery' },
+    { value: 'PHOTO_GALLERY',       label: 'Gallery' },
   ];
 
   const VIDEO_USAGES = [
@@ -289,30 +289,27 @@ const AdminMedia = () => {
                   <label style={labelStyle}>TITLE</label>
                   <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Media title" style={inputStyle} />
                 </div>
+                
+                {/* CATEGORY — its own cell with its own label */}
                 <div>
                   <label style={labelStyle}>CATEGORY *</label>
-                  <select
-                    value={form.category}
-                    onChange={e => setForm({ ...form, category: e.target.value })}
-                    style={selectStyle}
-                    required
-                  >
+                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} style={selectStyle} required>
                     {PHOTO_CATEGORIES.map(c => (
                       <option key={c.value} value={c.value}>{c.label}</option>
                     ))}
                   </select>
+                </div>
 
-                  <select
-                    value={form.usage}
-                    onChange={e => setForm({ ...form, usage: e.target.value })}
-                    style={selectStyle}
-                    required
-                  >
+                {/* USAGE — its own cell with its own label */}
+                <div>
+                  <label style={labelStyle}>USAGE *</label>
+                  <select value={form.usage} onChange={e => setForm({ ...form, usage: e.target.value })} style={selectStyle} required>
                     {PHOTO_USAGES.map(u => (
                       <option key={u.value} value={u.value}>{u.label}</option>
                     ))}
                   </select>
                 </div>
+
                 <div>
                   <label style={labelStyle}>FILE *</label>
                   <input type="file" ref={fileRef} accept="image/*,video/*,.pdf" style={{ ...inputStyle, padding: '9px 14px', cursor: 'pointer' }} required />
@@ -327,7 +324,7 @@ const AdminMedia = () => {
               </button>
             </form>
           )}
-  
+
           {/* YOUTUBE FORM */}
           {uploadMode === 'YOUTUBE' && (
             <form onSubmit={handleYoutubeSubmit}>
@@ -341,25 +338,21 @@ const AdminMedia = () => {
                   <label style={labelStyle}>TITLE *</label>
                   <input value={youtubeForm.title} onChange={e => setYoutubeForm({ ...youtubeForm, title: e.target.value })} placeholder="Video title" style={inputStyle} required />
                 </div>
+
+                {/* CATEGORY — own cell */}
                 <div>
                   <label style={labelStyle}>CATEGORY *</label>
-                  <select
-                    value={youtubeForm.category}
-                    onChange={e => setYoutubeForm({ ...youtubeForm, category: e.target.value })}
-                    style={selectStyle}
-                    required
-                  >
+                  <select value={youtubeForm.category} onChange={e => setYoutubeForm({ ...youtubeForm, category: e.target.value })} style={selectStyle} required>
                     {VIDEO_CATEGORIES.map(c => (
                       <option key={c.value} value={c.value}>{c.label}</option>
                     ))}
                   </select>
+                </div>
 
-                  <select
-                    value={youtubeForm.usage}
-                    onChange={e => setYoutubeForm({ ...youtubeForm, usage: e.target.value })}
-                    style={selectStyle}
-                    required
-                  >
+                {/* USAGE — own cell */}
+                <div>
+                  <label style={labelStyle}>USAGE *</label>
+                  <select value={youtubeForm.usage} onChange={e => setYoutubeForm({ ...youtubeForm, usage: e.target.value })} style={selectStyle} required>
                     {VIDEO_USAGES.map(u => (
                       <option key={u.value} value={u.value}>{u.label}</option>
                     ))}
