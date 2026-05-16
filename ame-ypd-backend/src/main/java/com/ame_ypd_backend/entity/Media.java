@@ -62,47 +62,36 @@ public class Media {
     }
 
     public enum MediaCategory {
-        EVENTS,         // Event photos/videos
-        WORSHIP,        // Worship services
-        YOUTH,          // Youth programs
-        COMMUNITY,      // Community outreach
-        LEADERSHIP,     // Leadership photos
-        GALLERY,        // General photo gallery
-        HERO_IMAGES,    // Homepage hero images
-        BLOG_IMAGES,    // Blog post images
-        STRUCTURE,      // Org structure photos
-        ABOUT,          // About page images
-        GENERAL         // Uncategorized
+        // Photos
+        YPD_MEMBERS,        // General YPD member photos
+        ALLEN_STARS,        // Allen Stars content
+        WORSHIP,            // Worship service photos
+        COMMUNITY_OUTREACH, // Community outreach photos
+        EXECUTIVE_MEMBERS,  // Leadership / executive headshots
+        EVENTS,             // Event photos
+        BLOG,               // Blog post cover images
+        GENERAL,            // General / gallery (default)
+
+        // Videos (YouTube only)
+        SERMON,             // Regular sermon videos
+        WORSHIP_DIRECTOR,   // Worship director sermon (for "This Week's Message")
+        OUTREACH_VIDEO,     // Community outreach videos
+        ALLEN_STARS_VIDEO   // Allen Stars video content
     }
 
     public enum MediaUsage {
-        
-        // ── General / Gallery ──
-        GALLERY,                // Public /media gallery page
+        // ── Photos ──
+        HOME_HERO,              // Home page hero banner (strictly 1)
+        HOME_STAY_INFORMED,     // Home "Stay Informed" mosaic (strictly 4, FIFO)
+        BLOG_COVER,             // Accompanies a blog post
+        ABOUT_JOURNEY,          // About "Journey of Faith" mosaic (strictly 4, FIFO)
+        LEADERSHIP_PROFILE,     // Executive profile pic — About & Structure pages
+        EVENT_COVER,            // Event card photo (shown on RSVP modal)
+        GALLERY,                // Public /media gallery (default)
 
-        // ── Blog ──
-        BLOG_FEATURED,          // Blog post cover image
-        BLOG_INLINE,            // Inline image inside blog content
-
-        // ── Home page ──
-        //HOME_HERO,              // Home page hero banner (1 image shown)
-        HOME_STAY_INFORMED,     // Home "Stay Informed" 4-photo mosaic
-
-        // ── About page ──
-        ABOUT_JOURNEY,          // About "Journey of Faith" 4-photo mosaic
-        LEADERSHIP_PROFILE,     // About "Guiding Principles" leader headshots
-
-        // ── Structure page ──
-        STRUCTURE_LEADER,       // Structure "Our Leadership" member headshots
-
-        // ── Events ──
-        EVENT_COVER,            // Event featured image
-
-        // ── Sermon / Media page ──
-        HERO_SECTION,           // Generic hero (kept for backwards compat)
-        PAGE_HEADER,            // Page header backgrounds
-
-        // ── Fallback ──
-        GENERAL                 // Multi-purpose / not yet assigned
+        // ── Videos ──
+        HOME_LATEST_SERMONS,    // Home page "Latest Sermons" section
+        HOME_THIS_WEEK,         // Home page "This Week's Message" section
+        VIDEO_GALLERY           // Public /media gallery (all other videos)
     }
 }
