@@ -225,6 +225,43 @@ const AdminMedia = () => {
     cursor: 'pointer'
   };
 
+  // ── CATEGORY options — same list for both file upload and YouTube ──
+  const PHOTO_CATEGORIES = [
+    { value: 'YPD_MEMBERS',        label: 'YPD Members' },
+    { value: 'ALLEN_STARS',        label: 'Allen Stars' },
+    { value: 'WORSHIP',            label: 'Worship' },
+    { value: 'COMMUNITY_OUTREACH', label: 'Community Outreach' },
+    { value: 'EXECUTIVE_MEMBERS',  label: 'Executive Members' },
+    { value: 'EVENTS',             label: 'Events' },
+    { value: 'BLOG',               label: 'Blog' },
+    { value: 'GENERAL',            label: 'General' },
+  ];
+
+  const VIDEO_CATEGORIES = [
+    { value: 'SERMON',            label: 'Sermon' },
+    { value: 'WORSHIP_DIRECTOR',  label: 'Worship Director Sermon' },
+    { value: 'OUTREACH_VIDEO',    label: 'Community Outreach Video' },
+    { value: 'ALLEN_STARS_VIDEO', label: 'Allen Stars Video' },
+    { value: 'GENERAL',           label: 'General' },
+  ];
+
+  // ── USAGE options — shown as helper text describing WHERE it will appear ──
+  const PHOTO_USAGES = [
+    { value: 'HOME_HERO',           label: 'Hero banner' },
+    { value: 'HOME_STAY_INFORMED',  label: 'Home page — Stay Informed' },
+    { value: 'BLOG_COVER',          label: 'Blog' },
+    { value: 'ABOUT_JOURNEY',       label: 'About page — Journey of Faith' },
+    { value: 'LEADERSHIP_PROFILE',  label: 'Leadership profile picture' },
+    { value: 'EVENT_COVER',         label: 'Event cover' },
+    { value: 'GALLERY',             label: 'Gallery' },
+  ];
+
+  const VIDEO_USAGES = [
+    { value: 'HOME_LATEST_SERMONS', label: 'Latest Sermons' },
+    { value: 'HOME_THIS_WEEK',      label: 'This Week\'s Message' },
+    { value: 'VIDEO_GALLERY',       label: 'Gallery' },
+  ];
+
   return (
       <AdminLayout>
         <h1 style={{ fontFamily: 'Georgia,serif', fontSize: 28, color: '#0d2b1a', marginBottom: 24 }}>
@@ -254,33 +291,26 @@ const AdminMedia = () => {
                 </div>
                 <div>
                   <label style={labelStyle}>CATEGORY *</label>
-                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} style={selectStyle} required>
-                    <option value="EVENTS">Events</option>
-                    <option value="WORSHIP">Worship</option>
-                    <option value="YOUTH">Youth</option>
-                    <option value="COMMUNITY">Community</option>
-                    <option value="LEADERSHIP">Leadership</option>
-                    <option value="GALLERY">Gallery</option>
-                    <option value="HERO_IMAGES">Hero Images</option>
-                    <option value="BLOG_IMAGES">Blog Images</option>
-                    <option value="STRUCTURE">Structure</option>
-                    <option value="ABOUT">About Page</option>
-                    <option value="GENERAL">General</option>
+                  <select
+                    value={form.category}
+                    onChange={e => setForm({ ...form, category: e.target.value })}
+                    style={selectStyle}
+                    required
+                  >
+                    {PHOTO_CATEGORIES.map(c => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
                   </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>USAGE *</label>
-                  <select value={form.usage} onChange={e => setForm({ ...form, usage: e.target.value })} style={selectStyle} required>
-                    <option value="GALLERY">Gallery</option>
-                    <option value="BLOG_FEATURED">Blog Featured</option>
-                    <option value="BLOG_INLINE">Blog Inline</option>
-                    <option value="HERO_SECTION">Hero Section</option>
-                    <option value="HOME_STAY_INFORMED">Home - Stay Informed</option>
-                    <option value="LEADERSHIP_PROFILE">Leadership Profile</option>
-                    <option value="EVENT_COVER">Event Cover</option>
-                    <option value="ABOUT_JOURNEY">About - Journey</option>
-                    <option value="PAGE_HEADER">Page Header</option>
-                    <option value="GENERAL">General</option>
+
+                  <select
+                    value={form.usage}
+                    onChange={e => setForm({ ...form, usage: e.target.value })}
+                    style={selectStyle}
+                    required
+                  >
+                    {PHOTO_USAGES.map(u => (
+                      <option key={u.value} value={u.value}>{u.label}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -313,20 +343,26 @@ const AdminMedia = () => {
                 </div>
                 <div>
                   <label style={labelStyle}>CATEGORY *</label>
-                  <select value={youtubeForm.category} onChange={e => setYoutubeForm({ ...youtubeForm, category: e.target.value })} style={selectStyle} required>
-                    <option value="EVENTS">Events</option>
-                    <option value="WORSHIP">Worship</option>
-                    <option value="YOUTH">Youth</option>
-                    <option value="COMMUNITY">Community</option>
-                    <option value="GENERAL">General</option>
+                  <select
+                    value={youtubeForm.category}
+                    onChange={e => setYoutubeForm({ ...youtubeForm, category: e.target.value })}
+                    style={selectStyle}
+                    required
+                  >
+                    {VIDEO_CATEGORIES.map(c => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
                   </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>USAGE *</label>
-                  <select value={youtubeForm.usage} onChange={e => setYoutubeForm({ ...youtubeForm, usage: e.target.value })} style={selectStyle} required>
-                    <option value="GALLERY">Gallery</option>
-                    <option value="HERO_SECTION">Hero Section</option>
-                    <option value="GENERAL">General</option>
+
+                  <select
+                    value={youtubeForm.usage}
+                    onChange={e => setYoutubeForm({ ...youtubeForm, usage: e.target.value })}
+                    style={selectStyle}
+                    required
+                  >
+                    {VIDEO_USAGES.map(u => (
+                      <option key={u.value} value={u.value}>{u.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
