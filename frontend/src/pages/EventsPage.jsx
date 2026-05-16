@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import eventService from '../services/eventService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
@@ -10,12 +10,9 @@ const EventsPage = () => {
   const [error,            setError]            = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [view,             setView]             = useState('grid');
-  const [rsvpEvent,        setRsvpEvent]        = useState(null);
-  const [rsvpForm,         setRsvpForm]         = useState({ name:'', email:'', attendees:1 });
-  const [rsvpDone,         setRsvpDone]         = useState(false);
-  const [rsvpLoading,      setRsvpLoading]      = useState(false);
 
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -55,28 +52,28 @@ const EventsPage = () => {
   const filtered = events.filter(e => selectedCategory === 'ALL' || e.category === selectedCategory);
   const featured = events.filter(e => e.featured)
   
-  const handleRSVP = (ev) => { setRsvpEvent(ev); setRsvpDone(false); setRsvpForm({ name: user?.firstName || '', email: user?.email || '', attendees: 1 }); };
+  const handleRSVP = (ev) => navigate(`/events/${ev.eventId}`);
 
-  const submitRSVP = async (e) => {
-    e.preventDefault();
-    setRsvpLoading(true);
-    try {
-      await eventService.rsvp(rsvpEvent.eventId, {
-        guestName: rsvpForm.name,
-        guestEmail: rsvpForm.email,
-        attendanceCount: rsvpForm.attendees,
-        userId: user?.userId || null,
-      });
-      setRsvpDone(true);
-      // Refresh events to update attendee count
-      const data = await eventService.getAll({ page:0, size:50 });
-      setEvents(data.content || data || []);
-    } catch (err) {
-      alert(typeof err === 'string' ? err : 'RSVP failed. Please try again.');
-    } finally {
-      setRsvpLoading(false);
-    }
-  };
+  // const submitRSVP = async (e) => {
+  //   e.preventDefault();
+  //   setRsvpLoading(true);
+  //   try {
+  //     await eventService.rsvp(rsvpEvent.eventId, {
+  //       guestName: rsvpForm.name,
+  //       guestEmail: rsvpForm.email,
+  //       attendanceCount: rsvpForm.attendees,
+  //       userId: user?.userId || null,
+  //     });
+  //     setRsvpDone(true);
+  //     // Refresh events to update attendee count
+  //     const data = await eventService.getAll({ page:0, size:50 });
+  //     setEvents(data.content || data || []);
+  //   } catch (err) {
+  //     alert(typeof err === 'string' ? err : 'RSVP failed. Please try again.');
+  //   } finally {
+  //     setRsvpLoading(false);
+  //   }
+  // };
 
   return (
     <div style={{ fontFamily:"'Lato',sans-serif", paddingTop:64 }}>
@@ -241,57 +238,6 @@ const EventsPage = () => {
           )}
         </div>
       </section>
-
-      {/* ── RSVP MODAL ── */}
-      {rsvpEvent && (
-        <div className="modal-overlay" onClick={()=>setRsvpEvent(null)}>
-          <div className="modal-box" onClick={e=>e.stopPropagation()}>
-            {/* Header */}
-            <div style={{ background:'linear-gradient(135deg,#1a4731,#40916c)', padding:'24px 28px' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                <div>
-                  <div style={{ fontSize:10, fontWeight:700, letterSpacing:'.18em', color:'#c9a84c', marginBottom:6 }}>{rsvpEvent.category}</div>
-                  <h3 style={{ fontFamily:'Georgia,serif', fontSize:22, color:'#fff', lineHeight:1.25 }}>{rsvpEvent.title}</h3>
-                  <p style={{ fontSize:13, color:'rgba(255,255,255,.65)', marginTop:6 }}>📍 {rsvpEvent.location} · 🕐 {formatDate(rsvpEvent.eventDate)} at {rsvpEvent.eventTime}</p>
-                </div>
-                <button onClick={()=>setRsvpEvent(null)} style={{ background:'none', border:'none', color:'rgba(255,255,255,.6)', fontSize:22, cursor:'pointer', lineHeight:1 }}>✕</button>
-              </div>
-            </div>
-            <div style={{ padding:'28px' }}>
-              {rsvpDone ? (
-                <div style={{ textAlign:'center', padding:'24px 0' }}>
-                  <div style={{ fontSize:40, color:'#1a6640', marginBottom:12 }}>✓</div>
-                  <h4 style={{ fontFamily:'Georgia,serif', fontSize:20, color:'#0d2b1a', marginBottom:8 }}>RSVP Confirmed!</h4>
-                  <p style={{ fontSize:13, color:'#6b8070' }}>Check your email for confirmation details. We look forward to seeing you!</p>
-                  <button onClick={()=>setRsvpEvent(null)}
-                    style={{ marginTop:20, background:'#c9a84c', color:'#0d2b1a', border:'none', padding:'12px 28px', borderRadius:6, fontFamily:'Lato,sans-serif', fontSize:13, fontWeight:700, cursor:'pointer' }}>
-                    Done
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={submitRSVP}>
-                  <h4 style={{ fontFamily:'Georgia,serif', fontSize:18, color:'#0d2b1a', marginBottom:20 }}>Complete Your RSVP</h4>
-                  {[['name','Full Name *','John Doe','text'],['email','Email Address *','john@example.com','email']].map(([k,l,ph,t]) => (
-                    <div key={k} style={{ marginBottom:16 }}>
-                      <label style={{ display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'#3d5247', marginBottom:7 }}>{l}</label>
-                      <input type={t} required placeholder={ph} value={rsvpForm[k]} onChange={e=>setRsvpForm({...rsvpForm,[k]:e.target.value})}
-                        style={{ width:'100%', padding:'12px 14px', border:'1.5px solid rgba(26,71,49,.2)', borderRadius:6, fontSize:14, outline:'none', fontFamily:"'Lato',sans-serif", boxSizing:'border-box' }} />
-                    </div>
-                  ))}
-                  <div style={{ marginBottom:22 }}>
-                    <label style={{ display:'block', fontSize:11, fontWeight:700, letterSpacing:'.12em', color:'#3d5247', marginBottom:7 }}>NUMBER OF ATTENDEES</label>
-                    <input type="number" min={1} max={10} value={rsvpForm.attendees} onChange={e=>setRsvpForm({...rsvpForm,attendees:e.target.value})}
-                      style={{ width:'100%', padding:'12px 14px', border:'1.5px solid rgba(26,71,49,.2)', borderRadius:6, fontSize:14, outline:'none', fontFamily:"'Lato',sans-serif", boxSizing:'border-box' }} />
-                  </div>
-                  <button type="submit" style={{ width:'100%', background:'#c9a84c', color:'#0d2b1a', border:'none', padding:'14px', borderRadius:6, fontFamily:'Lato,sans-serif', fontSize:13, fontWeight:700, cursor:'pointer', letterSpacing:'.08em' }}>
-                    SUBMIT RSVP
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
