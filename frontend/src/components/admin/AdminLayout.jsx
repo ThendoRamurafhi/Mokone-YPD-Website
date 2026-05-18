@@ -20,7 +20,8 @@ const AdminLayout = ({ children }) => {
     { to:'/admin/blog',     label:'Blog Posts',      icon:'📝' },
     { to:'/admin/media',    label:'Media',           icon:'🎬' },
     { to:'/admin/charges',  label:'Churches',        icon:'⛪' },
-    { to:'/admin/users',    label:'Users',           icon:'👥' },
+    { to:'/admin/leadership', label:'Leadership',    icon:'👥' },
+    { to:'/admin/users',    label:'Users',           icon:'👤' },
     { to:'/admin/prayers',  label:'Prayer Requests', icon:'🙏' },
   ];
 
