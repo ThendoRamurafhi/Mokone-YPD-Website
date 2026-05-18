@@ -18,6 +18,9 @@ public class EventResponse {
     private Boolean isPublic;
     private Event.EventStatus status;
     private Event.EventCategory category;
+    private Boolean featured;
+    private LocalDate rsvpDeadline;
+    private String coverImageUrl;
 
     // Constructor to convert from Entity to Response DTO
     public EventResponse(Event event) {
@@ -32,5 +35,8 @@ public class EventResponse {
         this.isPublic = event.getIsPublic();
         this.status = event.getStatus();
         this.category = event.getCategory();
+        this.featured     = event.getFeatured();
+        this.rsvpDeadline = event.getRsvpDeadline();
+        this.coverImageUrl = event.getCoverImageUrl();
     }
 }
