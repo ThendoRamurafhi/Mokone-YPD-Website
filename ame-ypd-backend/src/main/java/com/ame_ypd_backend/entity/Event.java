@@ -31,7 +31,11 @@ public class Event {
     private String location;
     private Integer maxAttendees;
     private Integer currentAttendees = 0;
+    // Add inside the Event class body (after currentAttendees):
+    private Boolean featured = false;
+    private LocalDate rsvpDeadline;
     private Boolean isPublic = true;
+    private String coverImageUrl;
 
     @Enumerated(EnumType.STRING)
     private EventStatus status = EventStatus.PUBLISHED;
@@ -41,5 +45,5 @@ public class Event {
 
     // Enums defined inside the class — clean SOLID approach
     public enum EventStatus { DRAFT, PUBLISHED, CANCELLED, COMPLETED }
-    public enum EventCategory { WORSHIP, YOUTH, COMMUNITY, FUNDRAISER, OTHER }
+    public enum EventCategory { WORSHIP, YOUTH, COMMUNITY, CONFERENCE, EDUCATIONAL, FUNDRAISER, OTHER }
 }
