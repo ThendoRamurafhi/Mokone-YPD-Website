@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import leadershipService from '../services/leadershipService';
-import mediaService from '../services/mediaService';
+import leadershipService from '../../services/leadershipService';
+import mediaService from '../../services/mediaService'; 
 
 const AdminLeadership = () => {
   const [leaders, setLeaders] = useState([]);
@@ -46,7 +46,7 @@ const AdminLeadership = () => {
   const loadLeadershipPhotos = async () => {
     try {
       // Get all media with LEADERSHIP category and LEADERSHIP_PROFILE usage
-      const response = await mediaService.getByCategoryAndUsage('LEADERSHIP', 'LEADERSHIP_PROFILE');
+      const response = await mediaService.getByCategoryAndUsage('EXECUTIVE_MEMBERS', 'LEADERSHIP_PROFILE');
       setLeadershipPhotos(response.data || []);
     } catch (err) {
       console.error('Failed to load leadership photos:', err);
@@ -271,7 +271,7 @@ const AdminLeadership = () => {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Rev. John Doe"
+                  placeholder="Thendo Ramurafhi"
                   required
                 />
               </div>
@@ -285,7 +285,7 @@ const AdminLeadership = () => {
                   type="text"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  placeholder="Presiding Elder"
+                  placeholder="Technology Chairperson"
                   required
                 />
               </div>
@@ -299,7 +299,7 @@ const AdminLeadership = () => {
                   type="text"
                   value={formData.initials}
                   onChange={(e) => setFormData({ ...formData, initials: e.target.value })}
-                  placeholder="JD"
+                  placeholder="TR"
                   maxLength={3}
                 />
               </div>
