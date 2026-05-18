@@ -1,7 +1,6 @@
 import api from './api';
 
-const leadershipService = {
-
+const leadershipService = {  
   // ── Public (About + Structure pages) ──────────────────────
   getForAbout:     () => api.get('/leadership/about'),
   getForStructure: () => api.get('/leadership/structure'),
