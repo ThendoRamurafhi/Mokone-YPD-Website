@@ -45,7 +45,7 @@ public class MediaService {
             // Demote the oldest item(s) to GALLERY so they stay visible
             // in the public gallery but no longer occupy the capped slot
             existing.subList(maxAllowed - 1, existing.size()).forEach(old -> {
-                old.setUsage(Media.MediaUsage.GALLERY);
+                old.setUsage(Media.MediaUsage.PHOTO_GALLERY);
                 mediaRepository.save(old);
             });
         }
@@ -99,7 +99,7 @@ public class MediaService {
         media.setFileSize(file.getSize());
         media.setMediaType(mediaType);
         media.setCategory(category != null ? category : Media.MediaCategory.GENERAL);
-        media.setUsage(usage != null ? usage : Media.MediaUsage.GALLERY);
+        media.setUsage(usage != null ? usage : Media.MediaUsage.PHOTO_GALLERY);
         media.setTitle(title != null ? title : sanitizeFileName(file.getOriginalFilename()));
         media.setDescription(description);
         media.setUploadedBy(uploadedBy);
