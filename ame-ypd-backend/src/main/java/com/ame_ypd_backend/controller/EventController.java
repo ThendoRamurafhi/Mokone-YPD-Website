@@ -2,6 +2,8 @@ package com.ame_ypd_backend.controller;
 
 import com.ame_ypd_backend.dto.EventRequest;
 import com.ame_ypd_backend.dto.EventResponse;
+import com.ame_ypd_backend.entity.Event;
+import com.ame_ypd_backend.repository.EventRepository;
 import com.ame_ypd_backend.service.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/events")  // Base URL: /api/v1/events
@@ -17,6 +20,9 @@ public class EventController {
 
     @Autowired
     private EventService eventService;
+
+    @Autowired
+    private EventRepository eventRepository;
 
     // GET /api/v1/events — public, no auth needed
     @GetMapping
@@ -49,6 +55,27 @@ public class EventController {
             @PathVariable Long id,
             @Valid @RequestBody EventRequest request) {
         return ResponseEntity.ok(eventService.updateEvent(id, request));
+    }
+
+    // POST /api/v1/events/{id}/rsvp
+    @PostMapping("/{id}/rsvp")
+    public ResponseEntity<?> rsvpEvent(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        try {
+            Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+            
+            // Increment attendee count
+            int count = body.get("attendanceCount") != null 
+                ? Integer.parseInt(body.get("attendanceCount").toString()) : 1;
+            event.setCurrentAttendees((event.getCurrentAttendees() == null ? 0 : event.getCurrentAttendees()) + count);
+            eventRepository.save(event);
+            
+            return ResponseEntity.ok(Map.of("message", "RSVP successful", "eventId", id));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
     }
 
     // DELETE /api/v1/events/{id}
