@@ -38,7 +38,7 @@ public class Media {
    
     @Enumerated(EnumType.STRING)
     @Column(name = "`usage`")
-    private MediaUsage usage = MediaUsage.GALLERY;  // NEW: Where this media is used
+    private MediaUsage usage = MediaUsage.PHOTO_GALLERY;  // NEW: Where this media is used
 
     private String title;
     private String description;
@@ -87,7 +87,7 @@ public class Media {
         ABOUT_JOURNEY,          // About "Journey of Faith" mosaic (strictly 4, FIFO)
         LEADERSHIP_PROFILE,     // Executive profile pic — About & Structure pages
         EVENT_COVER,            // Event card photo (shown on RSVP modal)
-        GALLERY,                // Public /media gallery (default)
+        PHOTO_GALLERY,                // Public /media gallery (default)
 
         // ── Videos ──
         HOME_LATEST_SERMONS,    // Home page "Latest Sermons" section
