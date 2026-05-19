@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import leadershipService from '../../services/leadershipService';
 import mediaService from '../../services/mediaService'; 
+import api from '../../services/api';
 
 const AdminLeadership = () => {
   const [leaders, setLeaders] = useState([]);
@@ -10,6 +11,7 @@ const AdminLeadership = () => {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+   const [success, setSuccess] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -34,7 +36,8 @@ const AdminLeadership = () => {
     try {
       setLoading(true);
       const response = await leadershipService.getAll();
-      setLeaders(response.data || []);
+      const sorted = (response.data || []).sort((a, b) => a.displayOrder - b.displayOrder);
+      setLeaders(sorted);
     } catch (err) {
       console.error('Failed to load leaders:', err);
       setError('Failed to load leadership data');
@@ -47,7 +50,9 @@ const AdminLeadership = () => {
     try {
       // Get all media with LEADERSHIP category and LEADERSHIP_PROFILE usage
       const response = await mediaService.getByCategoryAndUsage('EXECUTIVE_MEMBERS', 'LEADERSHIP_PROFILE');
-      setLeadershipPhotos(response.data || []);
+       const photos = response.data || [];
+      setLeadershipPhotos(photos);
+      console.log('Loaded leadership photos:', photos.length);
     } catch (err) {
       console.error('Failed to load leadership photos:', err);
     }
@@ -60,17 +65,33 @@ const AdminLeadership = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    
+    // ── Validation for About page limit ──
+    if (formData.pageSection !== 'STRUCTURE_TEAM') {
+      // Counting leaders already on About page
+      const aboutLeaders = leaders.filter(l => 
+        (l.pageSection === 'BOTH' || l.pageSection === 'ABOUT_LEADERSHIP') &&
+        l.leaderId !== editingId  // Exclude current edit
+      ).length;
+
+      if (aboutLeaders >= 4) {
+        setError('Maximum 4 leaders can be displayed on the About page. Remove or move a leader to Structure Only first.');
+        return;
+      }
+    }
 
     try {
       if (editingId) {
         await leadershipService.update(editingId, formData);
+        setSuccess('Leader updated successfully!');
       } else {
         await leadershipService.create(formData);
+        setSuccess('Leader added successfully!');
       }
       
       resetForm();
       loadLeaders();
-      alert(editingId ? 'Leader updated successfully!' : 'Leader added successfully!');
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Failed to save leader:', err);
       setError('Failed to save leader. Please try again.');
@@ -96,8 +117,9 @@ const AdminLeadership = () => {
 
     try {
       await leadershipService.remove(id);
+      setSuccess('Leader removed successfully!');
       loadLeaders();
-      alert('Leader removed successfully!');
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Failed to delete leader:', err);
       setError('Failed to delete leader');
@@ -121,6 +143,18 @@ const AdminLeadership = () => {
     });
     setEditingId(null);
     setShowForm(false);
+  };
+  
+  // ══════════════════════════════════════════════════════════════
+  // HELPER: Count About page leaders
+  // ══════════════════════════════════════════════════════════════
+
+  const countAboutLeaders = () => {
+    return leaders.filter(l => l.pageSection === 'BOTH' || l.pageSection === 'ABOUT_LEADERSHIP').length;
+  };
+
+  const canAddToAbout = () => {
+    return countAboutLeaders() < 4;
   };
 
   // ══════════════════════════════════════════════════════════════
@@ -158,6 +192,10 @@ const AdminLeadership = () => {
         .btn-primary:hover {
           background: #0d2b1a;
         }
+        .btn-primary:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+        }
         .btn-secondary {
           background: #e9ecef;
           color: #333;
@@ -179,10 +217,12 @@ const AdminLeadership = () => {
           border-radius: 6px;
           font-family: Lato,sans-serif;
           font-size: 14px;
+          box-sizing: border-box;
         }
         input:focus, select:focus, textarea:focus {
           outline: none;
           border-color: #1a4731;
+          box-shadow: 0 0 0 2px rgba(26,71,49,.1);
         }
         .photo-grid {
           display: grid;
@@ -203,6 +243,26 @@ const AdminLeadership = () => {
           border-color: #c9a84c;
           transform: scale(1.05);
         }
+        .badge {
+          display: inline-block;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: .1em;
+          padding: 4px 10px;
+          border-radius: 20px;
+        }
+        .badge-about {
+          background: rgba(37,96,64,.15);
+          color: #1a4731;
+        }
+        .badge-structure {
+          background: rgba(201,168,76,.15);
+          color: #7d5b00;
+        }
+        .badge-both {
+          background: rgba(26,71,49,.15);
+          color: #0d2b1a;
+        }
       `}</style>
 
       {/* ══════════════════════════════════════════════════════════════
@@ -215,7 +275,7 @@ const AdminLeadership = () => {
             Leadership Management
           </h1>
           <p style={{ fontSize: 14, color: '#6b8070' }}>
-            Manage church leaders displayed on About and Structure pages
+            Manage church leaders (Max 4 on About page, unlimited on Structure page)
           </p>
         </div>
         <button
@@ -228,7 +288,7 @@ const AdminLeadership = () => {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════
-          ERROR MESSAGE
+          MESSAGES
       ══════════════════════════════════════════════════════════════ */}
       
       {error && (
@@ -240,9 +300,43 @@ const AdminLeadership = () => {
           borderRadius: 8,
           marginBottom: 24
         }}>
-          {error}
+          ⚠️ {error}
         </div>
       )}
+
+      {success && (
+        <div style={{
+          background: 'rgba(37,96,64,.1)',
+          border: '1px solid rgba(37,96,64,.3)',
+          color: '#1a4731',
+          padding: '12px 16px',
+          borderRadius: 8,
+          marginBottom: 24
+        }}>
+          ✓ {success}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          STATS
+      ══════════════════════════════════════════════════════════════ */}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 28 }}>
+        <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,.08)', borderRadius: 8, padding: 16 }}>
+          <div style={{ fontSize: 12, color: '#6b8070', fontWeight: 600, marginBottom: 4 }}>ABOUT PAGE</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#1a4731' }}>
+            {countAboutLeaders()} <span style={{ fontSize: 14, fontWeight: 400, color: '#aaa' }}>/4</span>
+          </div>
+          <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+            {canAddToAbout() ? '✓ Can add more' : '⚠️ Limit reached'}
+          </div>
+        </div>
+        <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,.08)', borderRadius: 8, padding: 16 }}>
+          <div style={{ fontSize: 12, color: '#6b8070', fontWeight: 600, marginBottom: 4 }}>STRUCTURE PAGE</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#1a4731' }}>{leaders.length}</div>
+          <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>All leaders displayed</div>
+        </div>
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════
           ADD/EDIT FORM
@@ -271,7 +365,7 @@ const AdminLeadership = () => {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Thendo Ramurafhi"
+                  placeholder="Rev. John Doe"
                   required
                 />
               </div>
@@ -285,7 +379,7 @@ const AdminLeadership = () => {
                   type="text"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  placeholder="Technology Chairperson"
+                  placeholder="Presiding Elder"
                   required
                 />
               </div>
@@ -299,7 +393,7 @@ const AdminLeadership = () => {
                   type="text"
                   value={formData.initials}
                   onChange={(e) => setFormData({ ...formData, initials: e.target.value })}
-                  placeholder="TR"
+                  placeholder="JD"
                   maxLength={3}
                 />
               </div>
@@ -307,12 +401,12 @@ const AdminLeadership = () => {
               {/* Display Order */}
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
-                  Display Order
+                  Display Order (Lower number = First)
                 </label>
                 <input
                   type="number"
                   value={formData.displayOrder}
-                  onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
                   min="0"
                 />
               </div>
@@ -326,10 +420,15 @@ const AdminLeadership = () => {
               <select
                 value={formData.pageSection}
                 onChange={(e) => setFormData({ ...formData, pageSection: e.target.value })}
+                disabled={!canAddToAbout() && formData.pageSection !== 'STRUCTURE_TEAM' && !editingId}
                 required
               >
-                <option value="BOTH">Both About & Structure Pages</option>
-                <option value="ABOUT_LEADERSHIP">About Page Only</option>
+                <option value="BOTH" disabled={!canAddToAbout() && !editingId}>
+                  Both About & Structure Pages {!canAddToAbout() && !editingId ? '(Limit reached)' : ''}
+                </option>
+                <option value="ABOUT_LEADERSHIP" disabled={!canAddToAbout() && !editingId}>
+                  About Page Only {!canAddToAbout() && !editingId ? '(Limit reached)' : ''}
+                </option>
                 <option value="STRUCTURE_TEAM">Structure Page Only</option>
               </select>
             </div>
@@ -350,14 +449,14 @@ const AdminLeadership = () => {
             {/* Photo URL */}
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#333' }}>
-                Photo
+                Photo (Category: EXECUTIVE_MEMBERS, Usage: LEADERSHIP_PROFILE)
               </label>
               <div style={{ display: 'flex', gap: 12 }}>
                 <input
                   type="url"
                   value={formData.photoUrl}
                   onChange={(e) => setFormData({ ...formData, photoUrl: e.target.value })}
-                  placeholder="Paste photo URL from Media library"
+                  placeholder="Paste photo URL or click Pick from Media"
                   style={{ flex: 1 }}
                 />
                 <button
@@ -365,7 +464,7 @@ const AdminLeadership = () => {
                   onClick={() => setShowPhotoPicker(true)}
                   className="btn btn-secondary"
                 >
-                  🖼️ Pick from Media
+                  🖼️ Pick
                 </button>
               </div>
               {formData.photoUrl && (
@@ -380,6 +479,7 @@ const AdminLeadership = () => {
                     marginTop: 12,
                     border: '2px solid #ddd'
                   }}
+                  onError={() => console.log('Image failed to load')}
                 />
               )}
             </div>
@@ -456,7 +556,9 @@ const AdminLeadership = () => {
                 <div style={{ textAlign: 'center', padding: '40px', color: '#aaa' }}>
                   <p>No leadership photos found.</p>
                   <p style={{ fontSize: 12, marginTop: 8 }}>
-                    Upload photos to Media page with Category: LEADERSHIP and Usage: LEADERSHIP_PROFILE
+                    Upload photos to <strong>Media</strong> page with:
+                    <br/>Category: <strong>EXECUTIVE_MEMBERS</strong>
+                    <br/>Usage: <strong>LEADERSHIP_PROFILE</strong>
                   </p>
                 </div>
               ) : (
@@ -471,7 +573,7 @@ const AdminLeadership = () => {
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
                       }}
-                      title={photo.title}
+                      title={photo.fileName}
                     />
                   ))}
                 </div>
@@ -526,41 +628,32 @@ const AdminLeadership = () => {
                   </span>
                 )}
                 
-                {/* Page Section Badge */}
+                {/* Badges */}
                 <div style={{
                   position: 'absolute',
                   top: 12,
                   right: 12,
-                  background: 'rgba(0,0,0,.7)',
-                  color: '#fff',
-                  padding: '4px 10px',
-                  borderRadius: 4,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '.05em'
-                }}>
-                  {leader.pageSection === 'BOTH' ? '📄 BOTH PAGES' :
-                   leader.pageSection === 'ABOUT_LEADERSHIP' ? '📖 ABOUT' :
-                   '🏛️ STRUCTURE'}
-                </div>
-
-                {/* Display Order */}
-                <div style={{
-                  position: 'absolute',
-                  top: 12,
-                  left: 12,
-                  background: '#c9a84c',
-                  color: '#fff',
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 12,
-                  fontWeight: 700
+                  gap: 8,
+                  flexWrap: 'wrap',
+                  justifyContent: 'flex-end'
                 }}>
-                  {leader.displayOrder}
+                  <span className={`badge badge-${leader.pageSection === 'BOTH' ? 'both' : leader.pageSection === 'ABOUT_LEADERSHIP' ? 'about' : 'structure'}`}>
+                    {leader.pageSection === 'BOTH' ? '📄 BOTH' :
+                     leader.pageSection === 'ABOUT_LEADERSHIP' ? '📖 ABOUT' :
+                     '🏛️ STRUCTURE'}
+                  </span>
+                  <span style={{
+                    background: '#c9a84c',
+                    color: '#fff',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    letterSpacing: '.1em'
+                  }}>
+                    #{leader.displayOrder}
+                  </span>
                 </div>
               </div>
 
