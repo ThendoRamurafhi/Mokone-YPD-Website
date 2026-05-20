@@ -64,17 +64,33 @@ public class EventController {
             @RequestBody Map<String, Object> body) {
         try {
             Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
-            
-            // Increment attendee count
-            int count = body.get("attendanceCount") != null 
-                ? Integer.parseInt(body.get("attendanceCount").toString()) : 1;
-            event.setCurrentAttendees((event.getCurrentAttendees() == null ? 0 : event.getCurrentAttendees()) + count);
+                .orElseThrow(() -> new RuntimeException("Event not found with id: " + id));
+
+            int count = 1;
+            if (body.get("attendanceCount") != null) {
+                count = Integer.parseInt(body.get("attendanceCount").toString());
+            }
+
+            int current = event.getCurrentAttendees() == null ? 0 : event.getCurrentAttendees();
+
+            // Check capacity
+            if (event.getMaxAttendees() != null && (current + count) > event.getMaxAttendees()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Not enough spots available"));
+            }
+
+            event.setCurrentAttendees(current + count);
             eventRepository.save(event);
-            
-            return ResponseEntity.ok(Map.of("message", "RSVP successful", "eventId", id));
+
+            return ResponseEntity.ok(Map.of(
+                "message", "RSVP successful",
+                "eventId", id,
+                "attendees", count
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "RSVP failed"));
         }
     }
 
