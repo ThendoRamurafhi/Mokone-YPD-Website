@@ -10,13 +10,18 @@ const StructurePage = () => {
   /* ── Data ─────────────────────────────────────────── */
   const [leaders,      setLeaders]      = useState([]);
   
-    useEffect(() => { window.scrollTo(0, 0); }, []);
-  
-    useEffect(() => {
-      leadershipService.getForStructure()
-        .then(data => setLeaders(Array.isArray(data) ? data : []))
-        .catch(() => setLeaders([]));
-    }, []);
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  useEffect(() => {
+    leadershipService.getForStructure()
+      .then(data => {
+        // Sort by displayOrder ascending (lower number = first)
+        const sorted = (Array.isArray(data) ? data : [])
+          .sort((a, b) => a.displayOrder - b.displayOrder);
+        setLeaders(sorted);
+      })
+      .catch(() => setLeaders([]));
+  }, []);
 
   const areas = [
     {
@@ -185,7 +190,7 @@ const StructurePage = () => {
                   <span style={{ fontFamily: 'Lato,sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '.22em', color: '#c9a84c', display: 'block', marginBottom: 12 }}>OUR LEADERSHIP</span>
                   <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 700, color: '#0d2b1a', marginBottom: 8 }}>Conference Leadership Team</h2>
                   <p style={{ fontSize: 13, color: '#6b8070', marginBottom: 40 }}>
-                    Managed via Admin → Leadership. Photos uploaded in Media Library with usage "Structure Leader".
+                    All leaders are listed below, ranked by their display order.
                   </p>
                 </div>
       
@@ -197,9 +202,11 @@ const StructurePage = () => {
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(380px,1fr))', gap: 16 }}>
                     {leaders.map(person => (
-                      <div key={person.leaderId} className="leader-card">
+                      <div key={person.leaderId} style={{background:'#fff', border:'1px solid rgba(26,71,49,.1)', borderRadius:'14px', padding:'20px 22px', display:'flex', alignItems:'center', gap:'18px', transition:'all .3s' }}
+                        onMouseEnter={e => { e.currentTarget.style.boxShadow='0 8px 24px rgba(26,71,49,.1)'; e.currentTarget.style.transform='translateY(-2px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.boxShadow='none'; e.currentTarget.style.transform='translateY(0)'; }}>
                         {/* Avatar — real photo or initials */}
-                        <div className="leader-avatar">
+                        <div style={{ width:64, height:64, borderRadius:'50%', overflow:'hidden', background:'#0d2b1a', border:'2px solid #c9a84c', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                           {person.photoUrl ? (
                             <img src={person.photoUrl} alt={person.name}
                               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
