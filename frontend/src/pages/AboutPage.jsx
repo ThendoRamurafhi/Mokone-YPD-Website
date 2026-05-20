@@ -53,12 +53,17 @@ const AboutPage = () => {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
-    // Load leaders for About page
-    leadershipService.getForAbout() //mediaService.getByUsage('LEADERSHIP_PROFILE')  // Executive headshots
-      .then(data => setLeaders(Array.isArray(data) ? data : []))
+    // Load leaders for About page (max 4, sorted by displayOrder)
+    leadershipService.getForAbout()
+      .then(data => {
+        const sorted = (Array.isArray(data) ? data : [])
+          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .slice(0, 4); // Only first 4
+        setLeaders(sorted);
+      })
       .catch(() => setLeaders([]));
 
-    // Load "Journey of Faith" mosaic images (usage = ABOUT_JOURNEY)
+    // Load "Journey of Faith" mosaic images
     mediaService.getByUsage('ABOUT_JOURNEY')
       .then(data => setJourneyImages(Array.isArray(data) ? data.slice(0, 4) : []))
       .catch(() => setJourneyImages([]));
@@ -82,10 +87,10 @@ const AboutPage = () => {
   ];
 
   const orgLevels = [
-    { level: '01', title: 'Presiding Elder',          bg: '#3b0350' },
-    { level: '02', title: 'Ordained Ministers',        bg: '#099bea' },
-    { level: '03', title: 'YPD Directors & Officers',  bg: '#0d2b1a' },
-    { level: '04', title: 'Area Church YPD Leaders',   bg: '#eaf608' },
+    { level: '01', title: 'Presiding Elder',          bg: '#0d2b1a' },
+    { level: '02', title: 'Ordained Ministers',        bg: '#1a4731' },
+    { level: '03', title: 'YPD Directors & Officers',  bg: '#256040' },
+    { level: '04', title: 'Area Church YPD Leaders',   bg: '#40916c' },
   ];
 
   const handleSubmit = e => { e.preventDefault(); if (formData.email && formData.message) setSent(true); };
